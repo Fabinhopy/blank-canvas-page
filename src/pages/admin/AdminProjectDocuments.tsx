@@ -154,9 +154,14 @@ export default function AdminProjectDocuments() {
     mutationFn: async (data: { file: File; formData: typeof docFormData }) => {
       setUploading(true);
       
-      // Upload file to storage
+      // Upload file to storage - sanitize filename for Supabase Storage
       const fileExt = data.file.name.split('.').pop();
-      const fileName = `${projectId}/${Date.now()}-${data.file.name}`;
+      const sanitizedName = data.file.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^\w.\-]/g, '_')
+        .replace(/_+/g, '_');
+      const fileName = `${projectId}/${Date.now()}-${sanitizedName}`;
       
       const { error: uploadError } = await supabase.storage
         .from('documents')
