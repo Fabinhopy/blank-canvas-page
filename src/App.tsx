@@ -16,6 +16,7 @@ import ProjectModeling from "./pages/projeto/ProjectModeling";
 import ProjectTrainings from "./pages/projeto/ProjectTrainings";
 import ProjectSettings from "./pages/projeto/ProjectSettings";
 import NotFound from "./pages/NotFound";
+import Support from "./pages/Support";
 
 // Admin Pages
 import AdminClients from "./pages/admin/AdminClients";
@@ -100,6 +101,13 @@ const App = () => (
             <Route path="/admin/projetos/:projectId/treinamentos" element={
               <ProtectedRoute>
                 <AdminProjectTrainings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Support */}
+            <Route path="/suporte" element={
+              <ProtectedRoute>
+                <Support />
               </ProtectedRoute>
             } />
             
