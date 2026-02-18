@@ -178,15 +178,37 @@ export default function ProjectTrainings() {
   };
 
   const handleDownload = async (training: Training) => {
-    const url = await getSignedUrl(training.video_url);
-    if (url) {
+    try {
+      const { data, error } = await supabase.storage
+        .from('videos')
+        .download(training.video_url);
+      
+      if (error || !data) {
+        // Fallback to signed URL
+        const url = await getSignedUrl(training.video_url);
+        if (url) {
+          window.open(url, '_blank');
+        }
+        return;
+      }
+
+      // Create blob URL and trigger download
+      const blobUrl = URL.createObjectURL(data);
       const link = document.createElement('a');
-      link.href = url;
-      link.download = training.name;
-      link.target = '_blank';
+      link.href = blobUrl;
+      // Extract file extension from video_url
+      const ext = training.video_url.split('.').pop() || '';
+      link.download = `${training.name}.${ext}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback to signed URL in new tab
+      const url = await getSignedUrl(training.video_url);
+      if (url) {
+        window.open(url, '_blank');
+      }
     }
   };
 
