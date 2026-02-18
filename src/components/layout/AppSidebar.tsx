@@ -29,6 +29,7 @@ import {
   Settings,
   Loader2,
   Building2,
+  LifeBuoy,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
@@ -264,6 +265,21 @@ export function AppSidebar() {
                   </p>
                 </div>
               )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        {/* SAC / Support */}
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/suporte'}>
+                  <NavLink to="/suporte" className="flex items-center gap-3">
+                    <LifeBuoy className="h-4 w-4" />
+                    {!collapsed && <span>Suporte</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
