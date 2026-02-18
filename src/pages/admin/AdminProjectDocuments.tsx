@@ -99,11 +99,11 @@ export default function AdminProjectDocuments() {
   const [videoFormData, setVideoFormData] = useState({
     name: '',
     description: '',
-    video_url: '',
-    thumbnail_url: '',
     theme: '',
     order_index: 0
   });
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: project } = useQuery({
     queryKey: ['project', projectId],
@@ -219,18 +219,34 @@ export default function AdminProjectDocuments() {
     }
   });
 
-  const createVideoMutation = useMutation({
-    mutationFn: async (data: typeof videoFormData) => {
+  const uploadVideoMutation = useMutation({
+    mutationFn: async (data: { file: File; formData: typeof videoFormData }) => {
+      setUploading(true);
+      
+      // Sanitize filename
+      const sanitizedName = data.file.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^\w.\-]/g, '_')
+        .replace(/_+/g, '_');
+      const fileName = `${projectId}/${Date.now()}-${sanitizedName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(fileName, data.file, { cacheControl: '3600' });
+      
+      if (uploadError) throw uploadError;
+      
       const { error } = await supabase
         .from('videos')
         .insert({
           project_id: projectId,
-          name: data.name,
-          description: data.description || null,
-          video_url: data.video_url,
-          thumbnail_url: data.thumbnail_url || null,
-          theme: data.theme || null,
-          order_index: data.order_index,
+          name: data.formData.name || data.file.name.replace(/\.[^/.]+$/, ''),
+          description: data.formData.description || null,
+          video_url: fileName,
+          theme: data.formData.theme || null,
+          order_index: data.formData.order_index,
+          content_type: 'video',
           uploaded_by: user?.id
         });
       
@@ -238,20 +254,26 @@ export default function AdminProjectDocuments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-videos', projectId] });
-      toast.success('Vídeo adicionado com sucesso!');
+      toast.success('Vídeo enviado com sucesso!');
       handleVideoClose();
     },
     onError: (error: Error) => {
-      toast.error('Erro ao adicionar vídeo: ' + error.message);
+      toast.error('Erro ao enviar vídeo: ' + error.message);
+    },
+    onSettled: () => {
+      setUploading(false);
     }
   });
 
   const deleteVideoMutation = useMutation({
-    mutationFn: async (videoId: string) => {
+    mutationFn: async (video: VideoItem) => {
+      // Delete file from storage
+      await supabase.storage.from('videos').remove([video.video_url]);
+      
       const { error } = await supabase
         .from('videos')
         .delete()
-        .eq('id', videoId);
+        .eq('id', video.id);
       
       if (error) throw error;
     },
@@ -272,7 +294,8 @@ export default function AdminProjectDocuments() {
 
   const handleVideoClose = () => {
     setIsVideoOpen(false);
-    setVideoFormData({ name: '', description: '', video_url: '', thumbnail_url: '', theme: '', order_index: 0 });
+    setSelectedVideoFile(null);
+    setVideoFormData({ name: '', description: '', theme: '', order_index: 0 });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -294,13 +317,27 @@ export default function AdminProjectDocuments() {
     uploadDocMutation.mutate({ file: selectedFile, formData: docFormData });
   };
 
+  const handleVideoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('video/')) {
+        toast.error('Selecione um arquivo de vídeo');
+        return;
+      }
+      setSelectedVideoFile(file);
+      if (!videoFormData.name) {
+        setVideoFormData(prev => ({ ...prev, name: file.name.replace(/\.[^/.]+$/, '') }));
+      }
+    }
+  };
+
   const handleVideoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!videoFormData.name.trim() || !videoFormData.video_url.trim()) {
-      toast.error('Nome e URL do vídeo são obrigatórios');
+    if (!selectedVideoFile) {
+      toast.error('Selecione um arquivo de vídeo');
       return;
     }
-    createVideoMutation.mutate(videoFormData);
+    uploadVideoMutation.mutate({ file: selectedVideoFile, formData: videoFormData });
   };
 
   const formatFileSize = (bytes: number | null) => {
@@ -352,7 +389,7 @@ export default function AdminProjectDocuments() {
                   <DialogHeader>
                     <DialogTitle>Upload de Documento</DialogTitle>
                     <DialogDescription>
-                      Selecione um arquivo PDF para enviar ao projeto.
+                      Selecione um arquivo para enviar ao projeto.
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleDocSubmit}>
@@ -362,7 +399,7 @@ export default function AdminProjectDocuments() {
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept=".pdf,.doc,.docx,.xls,.xlsx"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
                           onChange={handleFileSelect}
                           className="hidden"
                         />
@@ -507,38 +544,39 @@ export default function AdminProjectDocuments() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Adicionar Vídeo</DialogTitle>
+                    <DialogTitle>Upload de Vídeo</DialogTitle>
                     <DialogDescription>
-                      Adicione um vídeo ao projeto informando a URL.
+                      Selecione um arquivo de vídeo do seu computador.
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleVideoSubmit}>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="videoName">Nome do Vídeo *</Label>
+                        <Label>Arquivo de Vídeo *</Label>
+                        <input
+                          ref={videoFileInputRef}
+                          type="file"
+                          accept="video/*"
+                          onChange={handleVideoFileSelect}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => videoFileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {selectedVideoFile ? selectedVideoFile.name : 'Selecionar vídeo'}
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="videoName">Nome do Vídeo</Label>
                         <Input
                           id="videoName"
                           value={videoFormData.name}
                           onChange={(e) => setVideoFormData({ ...videoFormData, name: e.target.value })}
                           placeholder="Título do vídeo"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="videoUrl">URL do Vídeo *</Label>
-                        <Input
-                          id="videoUrl"
-                          value={videoFormData.video_url}
-                          onChange={(e) => setVideoFormData({ ...videoFormData, video_url: e.target.value })}
-                          placeholder="https://..."
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="thumbnailUrl">URL da Thumbnail</Label>
-                        <Input
-                          id="thumbnailUrl"
-                          value={videoFormData.thumbnail_url}
-                          onChange={(e) => setVideoFormData({ ...videoFormData, thumbnail_url: e.target.value })}
-                          placeholder="https://..."
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -576,9 +614,9 @@ export default function AdminProjectDocuments() {
                       <Button type="button" variant="outline" onClick={handleVideoClose}>
                         Cancelar
                       </Button>
-                      <Button type="submit" disabled={createVideoMutation.isPending}>
-                        {createVideoMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        Adicionar
+                      <Button type="submit" disabled={uploading}>
+                        {uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        Enviar
                       </Button>
                     </DialogFooter>
                   </form>
@@ -627,7 +665,7 @@ export default function AdminProjectDocuments() {
                               size="icon"
                               onClick={() => {
                                 if (confirm('Tem certeza que deseja remover este vídeo?')) {
-                                  deleteVideoMutation.mutate(video.id);
+                                  deleteVideoMutation.mutate(video);
                                 }
                               }}
                             >
