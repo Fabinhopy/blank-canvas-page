@@ -149,8 +149,12 @@ export default function AdminProjectTrainings() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      // Generate unique file path
-      const fileName = `${Date.now()}-${contentFile.name}`;
+      // Sanitize filename
+      const sanitizedName = contentFile.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fileName = `${Date.now()}-${sanitizedName}`;
       const filePath = `${projectId}/${fileName}`;
 
       // Upload file to storage
@@ -166,7 +170,11 @@ export default function AdminProjectTrainings() {
       // Upload thumbnail if provided
       let thumbnailPath: string | null = null;
       if (thumbnailFile) {
-        const thumbFileName = `${Date.now()}-thumb-${thumbnailFile.name}`;
+        const sanitizedThumbName = thumbnailFile.name
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9._-]/g, '_');
+        const thumbFileName = `${Date.now()}-thumb-${sanitizedThumbName}`;
         const thumbPath = `${projectId}/thumbnails/${thumbFileName}`;
         
         const { error: thumbError } = await supabase.storage
