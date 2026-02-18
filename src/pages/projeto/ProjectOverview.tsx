@@ -56,7 +56,7 @@ export default function ProjectOverview() {
   const quickLinks = [
     { title: 'Documentos', description: `${documents?.length || 0} arquivos`, icon: FileText, path: 'documentos' },
     { title: 'Modelagem', description: `${docsByType.data_modeling} documentos`, icon: Database, path: 'modelagem' },
-    { title: 'Vídeos', description: `${videos?.length || 0} vídeos`, icon: Video, path: 'videos' },
+    { title: 'Treinamentos', description: `${videos?.length || 0} arquivos`, icon: Video, path: 'treinamentos' },
     { title: 'Configurações', description: 'Detalhes do projeto', icon: Settings, path: 'configuracoes' },
   ];
 
@@ -151,11 +151,11 @@ export default function ProjectOverview() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">Vídeos Recentes</CardTitle>
-                  <CardDescription>Últimos vídeos adicionados</CardDescription>
+                  <CardTitle className="text-lg">Treinamentos Recentes</CardTitle>
+                  <CardDescription>Últimos treinamentos adicionados</CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to={`/projeto/${id}/videos`}>
+                  <Link to={`/projeto/${id}/treinamentos`}>
                     Ver todos
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
