@@ -22,7 +22,7 @@ export function useClientBranding() {
         .from('client_users')
         .select('client_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (clientUserError || !clientUser) return null;
 
@@ -31,7 +31,7 @@ export function useClientBranding() {
         .from('clients')
         .select('id, name, logo_url, sidebar_color')
         .eq('id', clientUser.client_id)
-        .single();
+        .maybeSingle();
 
       if (clientError) throw clientError;
       return client as ClientBranding;
