@@ -87,6 +87,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           id: string
+          is_public: boolean
           name: string
           project_id: string
           updated_at: string
@@ -99,6 +100,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           id?: string
+          is_public?: boolean
           name: string
           project_id: string
           updated_at?: string
@@ -111,6 +113,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           id?: string
+          is_public?: boolean
           name?: string
           project_id?: string
           updated_at?: string
@@ -261,6 +264,7 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           id: string
+          is_public: boolean
           name: string
           order_index: number | null
           project_id: string
@@ -276,6 +280,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          is_public?: boolean
           name: string
           order_index?: number | null
           project_id: string
@@ -291,6 +296,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          is_public?: boolean
           name?: string
           order_index?: number | null
           project_id?: string
