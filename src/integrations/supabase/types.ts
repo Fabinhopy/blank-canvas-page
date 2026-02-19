@@ -267,7 +267,7 @@ export type Database = {
           is_public: boolean
           name: string
           order_index: number | null
-          project_id: string
+          project_id: string | null
           theme: string | null
           thumbnail_url: string | null
           updated_at: string
@@ -283,7 +283,7 @@ export type Database = {
           is_public?: boolean
           name: string
           order_index?: number | null
-          project_id: string
+          project_id?: string | null
           theme?: string | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -299,7 +299,7 @@ export type Database = {
           is_public?: boolean
           name?: string
           order_index?: number | null
-          project_id?: string
+          project_id?: string | null
           theme?: string | null
           thumbnail_url?: string | null
           updated_at?: string
