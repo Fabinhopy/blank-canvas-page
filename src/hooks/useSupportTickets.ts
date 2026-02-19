@@ -26,7 +26,7 @@ export function useSupportTickets() {
     queryFn: async () => {
       let query = supabase
         .from('support_tickets' as any)
-        .select('*, profiles!support_tickets_user_id_fkey(full_name, avatar_url)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (!isAdmin) {
@@ -35,7 +35,24 @@ export function useSupportTickets() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as unknown as SupportTicket[];
+      const tickets = (data || []) as unknown as SupportTicket[];
+
+      // For admin, fetch profile names for each unique user_id
+      if (isAdmin && tickets.length > 0) {
+        const userIds = [...new Set(tickets.map(t => t.user_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', userIds);
+        
+        const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+        return tickets.map(t => ({
+          ...t,
+          profiles: profileMap.get(t.user_id) || null,
+        }));
+      }
+
+      return tickets;
     },
     enabled: !!user,
   });
