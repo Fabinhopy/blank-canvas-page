@@ -25,6 +25,7 @@ import AdminClientUsers from "./pages/admin/AdminClientUsers";
 import AdminClientProjects from "./pages/admin/AdminClientProjects";
 import AdminProjectDocuments from "./pages/admin/AdminProjectDocuments";
 import AdminProjectTrainings from "./pages/admin/AdminProjectTrainings";
+import AdminGlobalTrainings from "./pages/admin/AdminGlobalTrainings";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,12 @@ const App = () => (
             <Route path="/admin/projetos/:projectId/treinamentos" element={
               <ProtectedRoute>
                 <AdminProjectTrainings />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/treinamentos" element={
+              <ProtectedRoute>
+                <AdminGlobalTrainings />
               </ProtectedRoute>
             } />
             
