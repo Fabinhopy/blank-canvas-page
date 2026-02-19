@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSupportTickets, useCreateTicket, useRespondTicket, SupportTicket } from '@/hooks/useSupportTickets';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -23,6 +24,8 @@ import {
   Loader2,
   Inbox,
   MessageSquare,
+  ImagePlus,
+  X,
 } from 'lucide-react';
 
 const categoryLabels: Record<string, { label: string; icon: typeof HelpCircle }> = {
@@ -47,19 +50,61 @@ export default function Support() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState('question');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [adminResponse, setAdminResponse] = useState('');
+  const [ticketImageUrl, setTicketImageUrl] = useState<string | null>(null);
+
+  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({ title: 'Arquivo inválido', description: 'Selecione uma imagem.', variant: 'destructive' });
+        return;
+      }
+      if (file.size > 10485760) {
+        toast({ title: 'Arquivo muito grande', description: 'Máximo 10MB.', variant: 'destructive' });
+        return;
+      }
+      setAttachmentFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setAttachmentPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeAttachment = () => {
+    setAttachmentFile(null);
+    setAttachmentPreview(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !message.trim()) return;
 
     try {
-      await createTicket.mutateAsync({ subject, message, category });
+      let attachmentUrl: string | null = null;
+
+      if (attachmentFile) {
+        const sanitizedName = attachmentFile.name
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `support/${Date.now()}-${sanitizedName}`;
+        const { error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(filePath, attachmentFile, { cacheControl: '3600', upsert: false });
+        if (uploadError) throw uploadError;
+        attachmentUrl = filePath;
+      }
+
+      await createTicket.mutateAsync({ subject, message, category, attachmentUrl });
       toast({ title: 'Ticket enviado!', description: 'Sua solicitação foi registrada com sucesso.' });
       setSubject('');
       setMessage('');
       setCategory('question');
+      removeAttachment();
       setShowForm(false);
     } catch {
       toast({ title: 'Erro ao enviar', description: 'Tente novamente.', variant: 'destructive' });
@@ -148,6 +193,29 @@ export default function Support() {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Anexar Imagem (opcional)</label>
+                  {attachmentPreview ? (
+                    <div className="relative inline-block">
+                      <img src={attachmentPreview} alt="Preview" className="max-h-32 rounded-lg border" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={removeAttachment}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed rounded-lg p-3">
+                      <ImagePlus className="h-5 w-5" />
+                      <span>Clique para selecionar uma imagem</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAttachmentChange} />
+                    </label>
+                  )}
+                </div>
                 <div className="flex gap-2 justify-end">
                   <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
                     Cancelar
@@ -189,13 +257,23 @@ export default function Support() {
               const CatIcon = cat.icon;
 
               return (
-                <Dialog key={ticket.id} onOpenChange={(open) => {
+                <Dialog key={ticket.id} onOpenChange={async (open) => {
                   if (open) {
                     setSelectedTicket(ticket);
                     setAdminResponse(ticket.admin_response || '');
+                    // Load attachment image if exists
+                    if (ticket.attachment_url) {
+                      const { data } = await supabase.storage
+                        .from('documents')
+                        .createSignedUrl(ticket.attachment_url, 3600);
+                      setTicketImageUrl(data?.signedUrl || null);
+                    } else {
+                      setTicketImageUrl(null);
+                    }
                   } else {
                     setSelectedTicket(null);
                     setAdminResponse('');
+                    setTicketImageUrl(null);
                   }
                 }}>
                   <DialogTrigger asChild>
@@ -260,6 +338,12 @@ export default function Support() {
                       <div className="bg-muted rounded-lg p-4">
                         <p className="text-sm text-foreground whitespace-pre-wrap">{ticket.message}</p>
                       </div>
+
+                      {ticketImageUrl && (
+                        <div className="rounded-lg overflow-hidden border">
+                          <img src={ticketImageUrl} alt="Anexo" className="max-h-64 w-auto object-contain" />
+                        </div>
+                      )}
 
                       {ticket.admin_response && (
                         <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">

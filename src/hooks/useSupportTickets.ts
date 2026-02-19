@@ -12,6 +12,7 @@ export interface SupportTicket {
   admin_response: string | null;
   responded_at: string | null;
   responded_by: string | null;
+  attachment_url: string | null;
   created_at: string;
   updated_at: string;
   // joined
@@ -65,10 +66,10 @@ export function useCreateTicket() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ subject, message, category }: { subject: string; message: string; category: string }) => {
+    mutationFn: async ({ subject, message, category, attachmentUrl }: { subject: string; message: string; category: string; attachmentUrl?: string | null }) => {
       const { data, error } = await supabase
         .from('support_tickets' as any)
-        .insert({ user_id: user?.id, subject, message, category } as any)
+        .insert({ user_id: user?.id, subject, message, category, attachment_url: attachmentUrl || null } as any)
         .select()
         .single();
       if (error) throw error;
