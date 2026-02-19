@@ -26,6 +26,7 @@ import {
   Filter
 } from 'lucide-react';
 import { formatDuration } from '@/hooks/useTrainings';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface TrainingItem {
   id: string;
@@ -98,6 +99,7 @@ export default function AdminProjectTrainings() {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedTraining, setSelectedTraining] = useState<TrainingItem | null>(null);
   const [contentFilter, setContentFilter] = useState<string>('all');
+  const [isPublic, setIsPublic] = useState(false);
 
   // Form state
   const [name, setName] = useState('');
@@ -205,6 +207,7 @@ export default function AdminProjectTrainings() {
           duration_seconds: null,
           uploaded_by: user.id,
           order_index: (trainings?.length || 0) + 1,
+          is_public: isPublic,
         });
 
       if (insertError) throw insertError;
@@ -270,6 +273,7 @@ export default function AdminProjectTrainings() {
     setContentFile(null);
     setThumbnailFile(null);
     setThumbnailPreview(null);
+    setIsPublic(false);
     setIsDialogOpen(false);
   };
 
@@ -532,6 +536,16 @@ export default function AdminProjectTrainings() {
                     placeholder="Descrição do treinamento..."
                     rows={3}
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="is-public"
+                    checked={isPublic}
+                    onCheckedChange={(checked) => setIsPublic(checked === true)}
+                  />
+                  <Label htmlFor="is-public" className="text-sm font-normal cursor-pointer">
+                    Arquivo público (visível para todos os usuários)
+                  </Label>
                 </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={resetForm}>

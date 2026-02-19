@@ -198,6 +198,22 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
+        {/* Global Trainings */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/treinamentos'}>
+                  <NavLink to="/treinamentos" className="flex items-center gap-3">
+                    <GraduationCap className="h-4 w-4" />
+                    {!collapsed && <span>Treinamentos</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Projects List */}
         <SidebarGroup>
           {!collapsed && (

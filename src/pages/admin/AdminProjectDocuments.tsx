@@ -48,6 +48,7 @@ import {
   Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Database as DatabaseType } from '@/integrations/supabase/types';
 
 type DocumentType = DatabaseType['public']['Enums']['document_type'];
@@ -93,14 +94,16 @@ export default function AdminProjectDocuments() {
   const [docFormData, setDocFormData] = useState({
     name: '',
     description: '',
-    document_type: 'technical_docs' as DocumentType
+    document_type: 'technical_docs' as DocumentType,
+    is_public: false
   });
-  
+
   const [videoFormData, setVideoFormData] = useState({
     name: '',
     description: '',
     theme: '',
-    order_index: 0
+    order_index: 0,
+    is_public: false
   });
   const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
   const videoFileInputRef = useRef<HTMLInputElement>(null);
@@ -179,9 +182,10 @@ export default function AdminProjectDocuments() {
           document_type: data.formData.document_type,
           file_path: fileName,
           file_size: data.file.size,
-          uploaded_by: user?.id
+          uploaded_by: user?.id,
+          is_public: data.formData.is_public
         });
-      
+
       if (docError) throw docError;
     },
     onSuccess: () => {
@@ -247,9 +251,10 @@ export default function AdminProjectDocuments() {
           theme: data.formData.theme || null,
           order_index: data.formData.order_index,
           content_type: 'video',
-          uploaded_by: user?.id
+          uploaded_by: user?.id,
+          is_public: data.formData.is_public
         });
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -289,13 +294,13 @@ export default function AdminProjectDocuments() {
   const handleDocClose = () => {
     setIsDocOpen(false);
     setSelectedFile(null);
-    setDocFormData({ name: '', description: '', document_type: 'technical_docs' });
+    setDocFormData({ name: '', description: '', document_type: 'technical_docs', is_public: false });
   };
 
   const handleVideoClose = () => {
     setIsVideoOpen(false);
     setSelectedVideoFile(null);
-    setVideoFormData({ name: '', description: '', theme: '', order_index: 0 });
+    setVideoFormData({ name: '', description: '', theme: '', order_index: 0, is_public: false });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -448,6 +453,16 @@ export default function AdminProjectDocuments() {
                           placeholder="Descrição do documento"
                           rows={2}
                         />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="doc-is-public"
+                          checked={docFormData.is_public}
+                          onCheckedChange={(checked) => setDocFormData({ ...docFormData, is_public: checked === true })}
+                        />
+                        <Label htmlFor="doc-is-public" className="text-sm font-normal cursor-pointer">
+                          Arquivo público (visível para todos os usuários)
+                        </Label>
                       </div>
                     </div>
                     <DialogFooter>
@@ -608,6 +623,16 @@ export default function AdminProjectDocuments() {
                           placeholder="Descrição do vídeo"
                           rows={2}
                         />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="video-is-public"
+                          checked={videoFormData.is_public}
+                          onCheckedChange={(checked) => setVideoFormData({ ...videoFormData, is_public: checked === true })}
+                        />
+                        <Label htmlFor="video-is-public" className="text-sm font-normal cursor-pointer">
+                          Arquivo público (visível para todos os usuários)
+                        </Label>
                       </div>
                     </div>
                     <DialogFooter>
