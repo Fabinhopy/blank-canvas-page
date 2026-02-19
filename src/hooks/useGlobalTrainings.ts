@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface GlobalTraining {
   id: string;
-  project_id: string;
+  project_id: string | null;
   name: string;
   description: string | null;
   video_url: string;
