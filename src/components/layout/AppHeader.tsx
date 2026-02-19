@@ -10,17 +10,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { LogOut, User, Settings, LifeBuoy } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 import { supabase } from '@/integrations/supabase/client';
-import { useOpenTicketsCount } from '@/hooks/useOpenTicketsCount';
 
 export function AppHeader() {
-  const { profile, userRole, isAdmin, signOut } = useAuth();
+  const { profile, userRole, signOut } = useAuth();
   const navigate = useNavigate();
-  const { data: openTicketsCount } = useOpenTicketsCount();
 
   const handleSignOut = async () => {
     await signOut();
@@ -49,18 +46,6 @@ export function AppHeader() {
       <Breadcrumbs />
       
       <div className="flex-1" />
-
-      {/* Support notification for admin */}
-      {isAdmin && openTicketsCount && openTicketsCount > 0 ? (
-        <Link to="/suporte" className="relative">
-          <Button variant="ghost" size="icon" className="relative">
-            <LifeBuoy className="h-5 w-5" />
-            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full px-1 text-[10px] font-bold">
-              {openTicketsCount}
-            </Badge>
-          </Button>
-        </Link>
-      ) : null}
       
       {/* Role Badge */}
       <div className="hidden sm:flex items-center gap-2">
