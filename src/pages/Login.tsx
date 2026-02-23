@@ -38,24 +38,26 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Decorative */}
-      <div className="hidden lg:flex lg:w-1/2 relative gradient-primary items-center justify-center overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #12579A 0%, #0a3d6e 50%, #878E97 100%)' }}>
         {/* Geometric shapes inspired by logo */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-[10%] left-[10%] w-32 h-32 rounded-lg bg-white/5 rotate-12" />
-          <div className="absolute top-[30%] right-[15%] w-48 h-48 rounded-lg bg-white/5 -rotate-6" />
-          <div className="absolute bottom-[15%] left-[20%] w-40 h-40 rounded-lg bg-white/5 rotate-45" />
-          <div className="absolute bottom-[30%] right-[25%] w-24 h-24 rounded-lg bg-white/10 rotate-12" />
-          <div className="absolute top-[60%] left-[5%] w-20 h-20 rounded-lg bg-white/5 -rotate-12" />
+          <div className="absolute top-[8%] left-[8%] w-36 h-36 rounded-lg rotate-12" style={{ backgroundColor: 'rgba(18,87,154,0.4)' }} />
+          <div className="absolute top-[25%] right-[10%] w-52 h-52 rounded-lg -rotate-6" style={{ backgroundColor: 'rgba(135,142,151,0.25)' }} />
+          <div className="absolute bottom-[10%] left-[15%] w-44 h-44 rounded-lg rotate-45" style={{ backgroundColor: 'rgba(18,87,154,0.3)' }} />
+          <div className="absolute bottom-[35%] right-[20%] w-28 h-28 rounded-lg rotate-12" style={{ backgroundColor: 'rgba(135,142,151,0.3)' }} />
+          <div className="absolute top-[55%] left-[3%] w-24 h-24 rounded-lg -rotate-12" style={{ backgroundColor: 'rgba(18,87,154,0.2)' }} />
+          <div className="absolute top-0 right-[30%] w-1 h-full" style={{ backgroundColor: 'rgba(135,142,151,0.15)' }} />
+          <div className="absolute top-0 right-[60%] w-1 h-full" style={{ backgroundColor: 'rgba(135,142,151,0.1)' }} />
         </div>
         <div className="relative z-10 text-center px-12 space-y-6">
           <img src={logo} alt="Smartest Solution" className="h-24 object-contain mx-auto brightness-0 invert" />
           <h2 className="text-3xl font-bold text-white tracking-tight">
             Smartest Solution
           </h2>
-          <p className="text-lg text-white/80 font-light">
+          <p className="text-lg font-light" style={{ color: 'rgba(255,255,255,0.8)' }}>
             Solução inteligente para o seu negócio
           </p>
-          <div className="w-16 h-1 bg-white/40 mx-auto rounded-full" />
+          <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: 'rgba(135,142,151,0.6)' }} />
         </div>
       </div>
 
