@@ -26,6 +26,7 @@ import AdminClientProjects from "./pages/admin/AdminClientProjects";
 import AdminProjectDocuments from "./pages/admin/AdminProjectDocuments";
 import AdminProjectTrainings from "./pages/admin/AdminProjectTrainings";
 import AdminGlobalTrainings from "./pages/admin/AdminGlobalTrainings";
+import AdminProjectStages from "./pages/admin/AdminProjectStages";
 
 const queryClient = new QueryClient();
 
