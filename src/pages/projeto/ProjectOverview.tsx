@@ -2,7 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
+import { useProjectStages } from '@/hooks/useProjectStages';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
