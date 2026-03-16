@@ -41,7 +41,8 @@ import {
   ArrowLeft,
   Building2,
   FileUp,
-  GraduationCap
+  GraduationCap,
+  BarChart3
 } from 'lucide-react';
 import { toast } from 'sonner';
 
