@@ -24,6 +24,7 @@ export default function ProjectOverview() {
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: documents } = useDocuments(id);
   const { data: videos } = useVideos(id);
+  const { data: stages, isLoading: stagesLoading } = useProjectStages(id);
 
   if (projectLoading) {
     return (
