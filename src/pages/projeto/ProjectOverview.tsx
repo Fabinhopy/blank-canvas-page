@@ -2,7 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
+import { useProjectStages } from '@/hooks/useProjectStages';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -22,6 +24,7 @@ export default function ProjectOverview() {
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: documents } = useDocuments(id);
   const { data: videos } = useVideos(id);
+  const { data: stages, isLoading: stagesLoading } = useProjectStages(id);
 
   if (projectLoading) {
     return (
@@ -104,6 +107,9 @@ export default function ProjectOverview() {
             </Card>
           ))}
         </div>
+
+        {/* Project Progress */}
+        <ProjectProgressTimeline stages={stages || []} isLoading={stagesLoading} />
 
         {/* Content Preview */}
         <div className="grid gap-6 lg:grid-cols-2">
