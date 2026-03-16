@@ -20,14 +20,14 @@ export function useProjectStages(projectId: string | undefined) {
     queryFn: async (): Promise<ProjectStage[]> => {
       if (!projectId) return [];
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('project_stages')
         .select('*')
         .eq('project_id', projectId)
         .order('order_index');
 
       if (error) throw error;
-      return data as unknown as ProjectStage[];
+      return data as ProjectStage[];
     },
     enabled: !!projectId,
   });
@@ -38,9 +38,9 @@ export function useUpdateProjectStage() {
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ProjectStage> }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('project_stages')
-        .update(updates as any)
+        .update(updates)
         .eq('id', id);
 
       if (error) throw error;
@@ -71,9 +71,9 @@ export function useCreateDefaultStages() {
         status: 'pending',
       }));
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('project_stages')
-        .insert(stages as any);
+        .insert(stages);
 
       if (error) throw error;
     },
