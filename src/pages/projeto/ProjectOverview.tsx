@@ -108,6 +108,9 @@ export default function ProjectOverview() {
           ))}
         </div>
 
+        {/* Project Progress */}
+        <ProjectProgressTimeline stages={stages || []} isLoading={stagesLoading} />
+
         {/* Content Preview */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Recent Documents */}

@@ -341,6 +341,11 @@ export default function AdminClientProjects() {
                               <GraduationCap className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <Button variant="ghost" size="icon" asChild title="Etapas do Projeto">
+                            <Link to={`/admin/projetos/${project.id}/etapas`}>
+                              <BarChart3 className="h-4 w-4" />
+                            </Link>
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
