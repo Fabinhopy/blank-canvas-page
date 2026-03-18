@@ -347,6 +347,11 @@ export default function AdminClientProjects() {
                               <BarChart3 className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <Button variant="ghost" size="icon" asChild title="Links de Dashboards">
+                            <Link to={`/admin/projetos/${project.id}/links`}>
+                              <Link2 className="h-4 w-4" />
+                            </Link>
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
