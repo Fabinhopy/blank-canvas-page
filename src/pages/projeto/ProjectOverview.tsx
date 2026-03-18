@@ -112,6 +112,9 @@ export default function ProjectOverview() {
         {/* Project Progress */}
         <ProjectProgressTimeline stages={stages || []} isLoading={stagesLoading} />
 
+        {/* Dashboard Links */}
+        <DashboardLinksSection projectId={id} />
+
         {/* Content Preview */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Recent Documents */}
