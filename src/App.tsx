@@ -27,6 +27,7 @@ import AdminProjectDocuments from "./pages/admin/AdminProjectDocuments";
 import AdminProjectTrainings from "./pages/admin/AdminProjectTrainings";
 import AdminGlobalTrainings from "./pages/admin/AdminGlobalTrainings";
 import AdminProjectStages from "./pages/admin/AdminProjectStages";
+import AdminProjectLinks from "./pages/admin/AdminProjectLinks";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,11 @@ const App = () => (
             <Route path="/admin/projetos/:projectId/etapas" element={
               <ProtectedRoute>
                 <AdminProjectStages />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/projetos/:projectId/links" element={
+              <ProtectedRoute>
+                <AdminProjectLinks />
               </ProtectedRoute>
             } />
             

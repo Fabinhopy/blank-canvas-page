@@ -5,6 +5,7 @@ import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
+import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -110,6 +111,9 @@ export default function ProjectOverview() {
 
         {/* Project Progress */}
         <ProjectProgressTimeline stages={stages || []} isLoading={stagesLoading} />
+
+        {/* Dashboard Links */}
+        <DashboardLinksSection projectId={id} />
 
         {/* Content Preview */}
         <div className="grid gap-6 lg:grid-cols-2">

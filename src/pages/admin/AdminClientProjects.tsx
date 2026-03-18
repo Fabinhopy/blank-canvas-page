@@ -42,7 +42,8 @@ import {
   Building2,
   FileUp,
   GraduationCap,
-  BarChart3
+  BarChart3,
+  Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -344,6 +345,11 @@ export default function AdminClientProjects() {
                           <Button variant="ghost" size="icon" asChild title="Etapas do Projeto">
                             <Link to={`/admin/projetos/${project.id}/etapas`}>
                               <BarChart3 className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" size="icon" asChild title="Links de Dashboards">
+                            <Link to={`/admin/projetos/${project.id}/links`}>
+                              <Link2 className="h-4 w-4" />
                             </Link>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
