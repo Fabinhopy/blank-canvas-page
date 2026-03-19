@@ -353,6 +353,11 @@ export default function AdminClientProjects() {
                               <Link2 className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <Button variant="ghost" size="icon" asChild title="Agenda de Entregas">
+                            <Link to={`/admin/projetos/${project.id}/agenda`}>
+                              <CalendarDays className="h-4 w-4" />
+                            </Link>
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
                             <Pencil className="h-4 w-4" />
                           </Button>

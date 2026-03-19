@@ -118,6 +118,9 @@ export default function ProjectOverview() {
         {/* Dashboard Links */}
         <DashboardLinksSection projectId={id} />
 
+        {/* Roadmap / Agenda de Entregas */}
+        <ProjectRoadmap milestones={milestones || []} isLoading={milestonesLoading} />
+
         {/* Content Preview */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Recent Documents */}
