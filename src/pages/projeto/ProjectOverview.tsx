@@ -28,6 +28,7 @@ export default function ProjectOverview() {
   const { data: documents } = useDocuments(id);
   const { data: videos } = useVideos(id);
   const { data: stages, isLoading: stagesLoading } = useProjectStages(id);
+  const { data: milestones, isLoading: milestonesLoading } = useProjectMilestones(id);
 
   if (projectLoading) {
     return (
