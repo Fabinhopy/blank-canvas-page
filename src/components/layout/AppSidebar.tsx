@@ -32,6 +32,8 @@ import {
   Loader2,
   Building2,
   LifeBuoy,
+  BarChart3,
+  CalendarDays,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
