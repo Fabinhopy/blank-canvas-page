@@ -15,6 +15,8 @@ import ProjectDocuments from "./pages/projeto/ProjectDocuments";
 import ProjectModeling from "./pages/projeto/ProjectModeling";
 import ProjectTrainings from "./pages/projeto/ProjectTrainings";
 import ProjectSettings from "./pages/projeto/ProjectSettings";
+import ProjectProgress from "./pages/projeto/ProjectProgress";
+import ProjectAgenda from "./pages/projeto/ProjectAgenda";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import GlobalTrainings from "./pages/GlobalTrainings";
@@ -59,6 +61,16 @@ const App = () => (
             <Route path="/projeto/:id" element={
               <ProtectedRoute>
                 <ProjectOverview />
+              </ProtectedRoute>
+            } />
+            <Route path="/projeto/:id/progresso" element={
+              <ProtectedRoute>
+                <ProjectProgress />
+              </ProtectedRoute>
+            } />
+            <Route path="/projeto/:id/agenda" element={
+              <ProtectedRoute>
+                <ProjectAgenda />
               </ProtectedRoute>
             } />
             <Route path="/projeto/:id/documentos" element={

@@ -32,11 +32,15 @@ import {
   Loader2,
   Building2,
   LifeBuoy,
+  BarChart3,
+  CalendarDays,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
 const projectSubMenuItems = [
   { title: 'Visão Geral', path: '', icon: LayoutDashboard },
+  { title: 'Progresso', path: '/progresso', icon: BarChart3 },
+  { title: 'Agenda', path: '/agenda', icon: CalendarDays },
   { title: 'Documentos', path: '/documentos', icon: FileText },
   { title: 'Modelagem', path: '/modelagem', icon: Database },
   { title: 'Treinamentos', path: '/treinamentos', icon: GraduationCap },
