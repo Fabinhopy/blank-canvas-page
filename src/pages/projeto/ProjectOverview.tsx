@@ -3,9 +3,11 @@ import { useProject } from '@/hooks/useProjects';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
+import { useProjectMilestones } from '@/hooks/useProjectMilestones';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
+import { ProjectRoadmap } from '@/components/projeto/ProjectRoadmap';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -26,6 +28,7 @@ export default function ProjectOverview() {
   const { data: documents } = useDocuments(id);
   const { data: videos } = useVideos(id);
   const { data: stages, isLoading: stagesLoading } = useProjectStages(id);
+  const { data: milestones, isLoading: milestonesLoading } = useProjectMilestones(id);
 
   if (projectLoading) {
     return (
@@ -114,6 +117,9 @@ export default function ProjectOverview() {
 
         {/* Dashboard Links */}
         <DashboardLinksSection projectId={id} />
+
+        {/* Roadmap / Agenda de Entregas */}
+        <ProjectRoadmap milestones={milestones || []} isLoading={milestonesLoading} />
 
         {/* Content Preview */}
         <div className="grid gap-6 lg:grid-cols-2">

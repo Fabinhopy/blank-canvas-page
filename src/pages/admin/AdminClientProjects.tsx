@@ -43,7 +43,8 @@ import {
   FileUp,
   GraduationCap,
   BarChart3,
-  Link2
+  Link2,
+  CalendarDays
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -350,6 +351,11 @@ export default function AdminClientProjects() {
                           <Button variant="ghost" size="icon" asChild title="Links de Dashboards">
                             <Link to={`/admin/projetos/${project.id}/links`}>
                               <Link2 className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" size="icon" asChild title="Agenda de Entregas">
+                            <Link to={`/admin/projetos/${project.id}/agenda`}>
+                              <CalendarDays className="h-4 w-4" />
                             </Link>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
