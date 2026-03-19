@@ -7,6 +7,7 @@ import { useProjectMilestones } from '@/hooks/useProjectMilestones';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
+import { ProjectRoadmap } from '@/components/projeto/ProjectRoadmap';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
