@@ -63,6 +63,16 @@ const App = () => (
                 <ProjectOverview />
               </ProtectedRoute>
             } />
+            <Route path="/projeto/:id/progresso" element={
+              <ProtectedRoute>
+                <ProjectProgress />
+              </ProtectedRoute>
+            } />
+            <Route path="/projeto/:id/agenda" element={
+              <ProtectedRoute>
+                <ProjectAgenda />
+              </ProtectedRoute>
+            } />
             <Route path="/projeto/:id/documentos" element={
               <ProtectedRoute>
                 <ProjectDocuments />
