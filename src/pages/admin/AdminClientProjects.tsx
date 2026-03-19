@@ -43,7 +43,8 @@ import {
   FileUp,
   GraduationCap,
   BarChart3,
-  Link2
+  Link2,
+  CalendarDays
 } from 'lucide-react';
 import { toast } from 'sonner';
 
