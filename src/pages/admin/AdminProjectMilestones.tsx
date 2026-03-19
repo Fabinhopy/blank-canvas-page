@@ -85,9 +85,9 @@ export default function AdminProjectMilestones() {
     const payload = {
       title: formData.title,
       description: formData.description || null,
-      milestone_type: formData.milestone_type,
+      milestone_type: formData.milestone_type as 'entrega' | 'reuniao' | 'marco',
       due_date: format(formData.due_date, 'yyyy-MM-dd'),
-      status: formData.status,
+      status: formData.status as 'pending' | 'in_progress' | 'completed' | 'cancelled',
     };
 
     if (editing) {
@@ -96,7 +96,7 @@ export default function AdminProjectMilestones() {
         onError: (err: Error) => toast.error(err.message),
       });
     } else {
-      createMutation.mutate({ ...payload, project_id: projectId! } as any, {
+      createMutation.mutate({ ...payload, project_id: projectId! }, {
         onSuccess: () => { toast.success('Marco criado!'); handleClose(); },
         onError: (err: Error) => toast.error(err.message),
       });
