@@ -3,6 +3,7 @@ import { useProject } from '@/hooks/useProjects';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
+import { useProjectMilestones } from '@/hooks/useProjectMilestones';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
