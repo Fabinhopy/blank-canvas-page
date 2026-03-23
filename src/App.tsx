@@ -32,6 +32,7 @@ import AdminGlobalTrainings from "./pages/admin/AdminGlobalTrainings";
 import AdminProjectStages from "./pages/admin/AdminProjectStages";
 import AdminProjectLinks from "./pages/admin/AdminProjectLinks";
 import AdminProjectMilestones from "./pages/admin/AdminProjectMilestones";
+import AdminProjectAnnouncements from "./pages/admin/AdminProjectAnnouncements";
 
 const queryClient = new QueryClient();
 
