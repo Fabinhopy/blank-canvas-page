@@ -23,6 +23,7 @@ export default function ProjectOverview() {
   const { data: videos } = useVideos(id);
   const { data: stages } = useProjectStages(id);
   const { data: milestones } = useProjectMilestones(id);
+  const { data: announcements } = useProjectAnnouncements(id);
 
   if (projectLoading) {
     return (
