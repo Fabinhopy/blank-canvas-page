@@ -17,6 +17,7 @@ import ProjectTrainings from "./pages/projeto/ProjectTrainings";
 import ProjectSettings from "./pages/projeto/ProjectSettings";
 import ProjectProgress from "./pages/projeto/ProjectProgress";
 import ProjectAgenda from "./pages/projeto/ProjectAgenda";
+import ProjectAnnouncements from "./pages/projeto/ProjectAnnouncements";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import GlobalTrainings from "./pages/GlobalTrainings";
@@ -31,6 +32,7 @@ import AdminGlobalTrainings from "./pages/admin/AdminGlobalTrainings";
 import AdminProjectStages from "./pages/admin/AdminProjectStages";
 import AdminProjectLinks from "./pages/admin/AdminProjectLinks";
 import AdminProjectMilestones from "./pages/admin/AdminProjectMilestones";
+import AdminProjectAnnouncements from "./pages/admin/AdminProjectAnnouncements";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +95,11 @@ const App = () => (
                 <ProjectSettings />
               </ProtectedRoute>
             } />
+            <Route path="/projeto/:id/comunicados" element={
+              <ProtectedRoute>
+                <ProjectAnnouncements />
+              </ProtectedRoute>
+            } />
             
             {/* Admin routes */}
             <Route path="/admin/empresas" element={
@@ -134,6 +141,11 @@ const App = () => (
             <Route path="/admin/projetos/:projectId/agenda" element={
               <ProtectedRoute>
                 <AdminProjectMilestones />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/projetos/:projectId/comunicados" element={
+              <ProtectedRoute>
+                <AdminProjectAnnouncements />
               </ProtectedRoute>
             } />
             

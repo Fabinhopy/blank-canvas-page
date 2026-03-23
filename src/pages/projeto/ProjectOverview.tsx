@@ -4,13 +4,14 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
 import { useProjectMilestones } from '@/hooks/useProjectMilestones';
+import { useProjectAnnouncements } from '@/hooks/useProjectAnnouncements';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, Database, Video, Settings, ArrowRight, Loader2, Calendar,
-  BarChart3, CalendarDays, CheckCircle2, Clock
+  BarChart3, CalendarDays, CheckCircle2, Clock, Megaphone
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,6 +23,7 @@ export default function ProjectOverview() {
   const { data: videos } = useVideos(id);
   const { data: stages } = useProjectStages(id);
   const { data: milestones } = useProjectMilestones(id);
+  const { data: announcements } = useProjectAnnouncements(id);
 
   if (projectLoading) {
     return (
@@ -87,8 +89,8 @@ export default function ProjectOverview() {
           </div>
         </div>
 
-        {/* Progress & Agenda Summary */}
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* Progress, Agenda & Comunicados Summary */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Progress Summary */}
           <Card className="hover:shadow-md transition-shadow group">
             <Link to={`/projeto/${id}/progresso`}>
@@ -153,6 +155,41 @@ export default function ProjectOverview() {
                 )}
                 <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   Ver agenda <ArrowRight className="ml-1 h-4 w-4" />
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+
+          {/* Comunicados Summary */}
+          <Card className="hover:shadow-md transition-shadow group">
+            <Link to={`/projeto/${id}/comunicados`}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Megaphone className="h-4 w-4 text-primary" />
+                    Comunicados
+                  </CardTitle>
+                  <span className="text-sm text-muted-foreground">{announcements?.length || 0} posts</span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {announcements && announcements.length > 0 ? (
+                  <div className="space-y-2">
+                    {announcements.slice(0, 3).map((a) => (
+                      <div key={a.id} className="flex items-center gap-2 text-sm">
+                        <Megaphone className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+                        <span className="truncate flex-1">{a.title}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {format(new Date(a.created_at), 'dd/MM', { locale: ptBR })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhum comunicado</p>
+                )}
+                <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ver comunicados <ArrowRight className="ml-1 h-4 w-4" />
                 </div>
               </CardContent>
             </Link>
