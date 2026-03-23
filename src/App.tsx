@@ -17,6 +17,7 @@ import ProjectTrainings from "./pages/projeto/ProjectTrainings";
 import ProjectSettings from "./pages/projeto/ProjectSettings";
 import ProjectProgress from "./pages/projeto/ProjectProgress";
 import ProjectAgenda from "./pages/projeto/ProjectAgenda";
+import ProjectAnnouncements from "./pages/projeto/ProjectAnnouncements";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import GlobalTrainings from "./pages/GlobalTrainings";
