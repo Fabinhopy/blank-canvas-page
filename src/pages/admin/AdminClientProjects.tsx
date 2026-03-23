@@ -44,7 +44,8 @@ import {
   GraduationCap,
   BarChart3,
   Link2,
-  CalendarDays
+  CalendarDays,
+  Megaphone
 } from 'lucide-react';
 import { toast } from 'sonner';
 
