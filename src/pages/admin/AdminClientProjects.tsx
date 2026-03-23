@@ -359,6 +359,11 @@ export default function AdminClientProjects() {
                               <CalendarDays className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <Button variant="ghost" size="icon" asChild title="Comunicados">
+                            <Link to={`/admin/projetos/${project.id}/comunicados`}>
+                              <Megaphone className="h-4 w-4" />
+                            </Link>
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
