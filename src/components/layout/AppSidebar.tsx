@@ -34,6 +34,7 @@ import {
   LifeBuoy,
   BarChart3,
   CalendarDays,
+  Megaphone,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
