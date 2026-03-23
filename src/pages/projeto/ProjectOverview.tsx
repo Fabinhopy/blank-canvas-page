@@ -159,6 +159,41 @@ export default function ProjectOverview() {
               </CardContent>
             </Link>
           </Card>
+
+          {/* Comunicados Summary */}
+          <Card className="hover:shadow-md transition-shadow group">
+            <Link to={`/projeto/${id}/comunicados`}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Megaphone className="h-4 w-4 text-primary" />
+                    Comunicados
+                  </CardTitle>
+                  <span className="text-sm text-muted-foreground">{announcements?.length || 0} posts</span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {announcements && announcements.length > 0 ? (
+                  <div className="space-y-2">
+                    {announcements.slice(0, 3).map((a) => (
+                      <div key={a.id} className="flex items-center gap-2 text-sm">
+                        <Megaphone className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+                        <span className="truncate flex-1">{a.title}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {format(new Date(a.created_at), 'dd/MM', { locale: ptBR })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhum comunicado</p>
+                )}
+                <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ver comunicados <ArrowRight className="ml-1 h-4 w-4" />
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
         </div>
 
         {/* Quick Stats */}
