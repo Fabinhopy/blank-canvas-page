@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { 
   FileText, Database, Video, Settings, ArrowRight, Loader2, Calendar,
-  BarChart3, CalendarDays, CheckCircle2, Clock
+  BarChart3, CalendarDays, CheckCircle2, Clock, Megaphone
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
