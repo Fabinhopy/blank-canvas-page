@@ -89,8 +89,8 @@ export default function ProjectOverview() {
           </div>
         </div>
 
-        {/* Progress & Agenda Summary */}
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* Progress, Agenda & Comunicados Summary */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Progress Summary */}
           <Card className="hover:shadow-md transition-shadow group">
             <Link to={`/projeto/${id}/progresso`}>
