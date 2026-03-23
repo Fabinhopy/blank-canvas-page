@@ -4,6 +4,7 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
 import { useProjectMilestones } from '@/hooks/useProjectMilestones';
+import { useProjectAnnouncements } from '@/hooks/useProjectAnnouncements';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
