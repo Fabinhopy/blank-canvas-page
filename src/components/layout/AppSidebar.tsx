@@ -35,6 +35,7 @@ import {
   BarChart3,
   CalendarDays,
   Megaphone,
+  Tag,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
@@ -43,6 +44,7 @@ const projectSubMenuItems = [
   { title: 'Progresso', path: '/progresso', icon: BarChart3 },
   { title: 'Agenda', path: '/agenda', icon: CalendarDays },
   { title: 'Comunicados', path: '/comunicados', icon: Megaphone },
+  { title: 'Versões', path: '/versoes', icon: Tag },
   { title: 'Documentos', path: '/documentos', icon: FileText },
   { title: 'Modelagem', path: '/modelagem', icon: Database },
   { title: 'Treinamentos', path: '/treinamentos', icon: GraduationCap },

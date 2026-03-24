@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, User, Settings } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
+import { NotificationBell } from './NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 
 export function AppHeader() {
@@ -46,6 +47,8 @@ export function AppHeader() {
       <Breadcrumbs />
       
       <div className="flex-1" />
+      
+      <NotificationBell />
       
       {/* Role Badge */}
       <div className="hidden sm:flex items-center gap-2">
