@@ -45,7 +45,8 @@ import {
   BarChart3,
   Link2,
   CalendarDays,
-  Megaphone
+  Megaphone,
+  Tag
 } from 'lucide-react';
 import { toast } from 'sonner';
 
