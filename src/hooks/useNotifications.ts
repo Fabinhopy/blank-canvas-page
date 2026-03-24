@@ -20,17 +20,17 @@ export function useNotifications() {
   return useQuery({
     queryKey: ['notifications', user?.id],
     queryFn: async (): Promise<Notification[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      return data as unknown as Notification[];
+      return data as Notification[];
     },
     enabled: !!user,
-    refetchInterval: 30000, // Poll every 30s
+    refetchInterval: 30000,
   });
 }
 
@@ -40,7 +40,7 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications-unread-count', user?.id],
     queryFn: async (): Promise<number> => {
-      const { count, error } = await supabase
+      const { count, error } = await (supabase as any)
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false);
@@ -58,7 +58,7 @@ export function useMarkAsRead() {
 
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId);
@@ -77,7 +77,7 @@ export function useMarkAllAsRead() {
 
   return useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ is_read: true })
         .eq('user_id', user!.id)

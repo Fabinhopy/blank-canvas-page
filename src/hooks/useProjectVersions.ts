@@ -19,14 +19,14 @@ export function useProjectVersions(projectId: string | undefined) {
     queryKey: ['project-versions', projectId],
     queryFn: async (): Promise<ProjectVersion[]> => {
       if (!projectId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('project_versions')
         .select('*')
         .eq('project_id', projectId)
         .order('released_at', { ascending: false });
 
       if (error) throw error;
-      return data as unknown as ProjectVersion[];
+      return data as ProjectVersion[];
     },
     enabled: !!projectId,
   });
@@ -43,12 +43,12 @@ export function useCreateProjectVersion(projectId: string | undefined) {
       release_notes?: string;
       created_by?: string;
     }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('project_versions')
         .insert({
           project_id: projectId!,
           ...data,
-        } as any);
+        });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -62,7 +62,7 @@ export function useDeleteProjectVersion(projectId: string | undefined) {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('project_versions')
         .delete()
         .eq('id', id);
