@@ -34,6 +34,7 @@ import AdminProjectStages from "./pages/admin/AdminProjectStages";
 import AdminProjectLinks from "./pages/admin/AdminProjectLinks";
 import AdminProjectMilestones from "./pages/admin/AdminProjectMilestones";
 import AdminProjectAnnouncements from "./pages/admin/AdminProjectAnnouncements";
+import AdminProjectVersions from "./pages/admin/AdminProjectVersions";
 
 const queryClient = new QueryClient();
 
