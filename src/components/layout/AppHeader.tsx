@@ -48,6 +48,8 @@ export function AppHeader() {
       
       <div className="flex-1" />
       
+      <NotificationBell />
+      
       {/* Role Badge */}
       <div className="hidden sm:flex items-center gap-2">
         <span className={`text-xs font-medium px-2 py-1 rounded-full ${

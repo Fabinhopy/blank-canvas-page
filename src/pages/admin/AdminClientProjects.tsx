@@ -365,6 +365,11 @@ export default function AdminClientProjects() {
                               <Megaphone className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <Button variant="ghost" size="icon" asChild title="Versões">
+                            <Link to={`/admin/projetos/${project.id}/versoes`}>
+                              <Tag className="h-4 w-4" />
+                            </Link>
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
