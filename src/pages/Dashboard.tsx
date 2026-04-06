@@ -24,6 +24,11 @@ export default function Dashboard() {
   const { profile, userRole } = useAuth();
   const { data: projects, isLoading } = useProjects();
   const { documentsCount, trainingsCount } = useDashboardStats();
+  const { data: milestones } = useAllMilestones();
+
+  const upcomingMilestones = milestones
+    ?.filter(m => m.status !== 'completed' && m.status !== 'cancelled')
+    .slice(0, 5) || [];
 
   return (
     <AppLayout>
