@@ -87,7 +87,50 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Projects List */}
+        {/* Upcoming Milestones */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-primary" />
+                Próximos Compromissos
+              </CardTitle>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/agenda">Ver todos <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {upcomingMilestones.length > 0 ? (
+              <div className="space-y-3">
+                {upcomingMilestones.map((m) => {
+                  const date = new Date(m.due_date);
+                  const isOverdue = isPast(date) && m.status !== 'completed';
+                  return (
+                    <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted shrink-0 text-center">
+                        <span className="text-xs font-bold leading-tight">
+                          {format(date, 'dd', { locale: ptBR })}
+                          <br />
+                          <span className="text-[9px] uppercase text-muted-foreground">{format(date, 'MMM', { locale: ptBR })}</span>
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{m.title}</p>
+                        <p className="text-xs text-muted-foreground">{m.project_name}</p>
+                      </div>
+                      {isOverdue && <Badge variant="destructive" className="text-[10px]">Atrasado</Badge>}
+                      {isToday(date) && <Badge className="text-[10px] bg-primary">Hoje</Badge>}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhum compromisso pendente</p>
+            )}
+          </CardContent>
+        </Card>
+
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Seus Projetos</h2>
