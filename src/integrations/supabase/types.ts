@@ -139,9 +139,11 @@ export type Database = {
           id: string
           is_public: boolean
           name: string
+          parent_document_id: string | null
           project_id: string
           updated_at: string
           uploaded_by: string | null
+          version: number
         }
         Insert: {
           created_at?: string
@@ -152,9 +154,11 @@ export type Database = {
           id?: string
           is_public?: boolean
           name: string
+          parent_document_id?: string | null
           project_id: string
           updated_at?: string
           uploaded_by?: string | null
+          version?: number
         }
         Update: {
           created_at?: string
@@ -165,13 +169,66 @@ export type Database = {
           id?: string
           is_public?: boolean
           name?: string
+          parent_document_id?: string | null
           project_id?: string
           updated_at?: string
           uploaded_by?: string | null
+          version?: number
         }
         Relationships: [
           {
+            foreignKeyName: "documents_parent_document_id_fkey"
+            columns: ["parent_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string
+          notification_type: string
+          project_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message: string
+          notification_type?: string
+          project_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string
+          notification_type?: string
+          project_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -378,6 +435,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_stages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          project_id: string
+          release_notes: string | null
+          released_at: string
+          title: string
+          updated_at: string
+          version_number: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          project_id: string
+          release_notes?: string | null
+          released_at?: string
+          title: string
+          updated_at?: string
+          version_number: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          project_id?: string
+          release_notes?: string | null
+          released_at?: string
+          title?: string
+          updated_at?: string
+          version_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_versions_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
