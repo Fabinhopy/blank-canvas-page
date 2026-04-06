@@ -8,6 +8,8 @@ export interface ProjectStageItem {
   is_completed: boolean;
   completed_at: string | null;
   order_index: number;
+  document_id: string | null;
+  document?: { name: string; file_path: string } | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,11 +21,14 @@ export function useProjectStageItems(stageId: string | undefined) {
       if (!stageId) return [];
       const { data, error } = await (supabase as any)
         .from('project_stage_items')
-        .select('*')
+        .select('*, documents(name, file_path)')
         .eq('stage_id', stageId)
         .order('order_index');
       if (error) throw error;
-      return data as ProjectStageItem[];
+      return (data as any[]).map((item: any) => ({
+        ...item,
+        document: item.documents || null,
+      }));
     },
     enabled: !!stageId,
   });

@@ -12,13 +12,13 @@ import Dashboard from "./pages/Dashboard";
 import ProfileSettings from "./pages/ProfileSettings";
 import ProjectOverview from "./pages/projeto/ProjectOverview";
 import ProjectDocuments from "./pages/projeto/ProjectDocuments";
-import ProjectModeling from "./pages/projeto/ProjectModeling";
 import ProjectTrainings from "./pages/projeto/ProjectTrainings";
 import ProjectSettings from "./pages/projeto/ProjectSettings";
 import ProjectProgress from "./pages/projeto/ProjectProgress";
 import ProjectAgenda from "./pages/projeto/ProjectAgenda";
 import ProjectAnnouncements from "./pages/projeto/ProjectAnnouncements";
 import ProjectVersions from "./pages/projeto/ProjectVersions";
+import GlobalAgenda from "./pages/GlobalAgenda";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import GlobalTrainings from "./pages/GlobalTrainings";
@@ -51,134 +51,84 @@ const App = () => (
             
             {/* Protected routes */}
             <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
+              <ProtectedRoute><Dashboard /></ProtectedRoute>
             } />
             <Route path="/perfil" element={
-              <ProtectedRoute>
-                <ProfileSettings />
-              </ProtectedRoute>
+              <ProtectedRoute><ProfileSettings /></ProtectedRoute>
+            } />
+            <Route path="/agenda" element={
+              <ProtectedRoute><GlobalAgenda /></ProtectedRoute>
             } />
             
             {/* Project routes */}
             <Route path="/projeto/:id" element={
-              <ProtectedRoute>
-                <ProjectOverview />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectOverview /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/progresso" element={
-              <ProtectedRoute>
-                <ProjectProgress />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectProgress /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/agenda" element={
-              <ProtectedRoute>
-                <ProjectAgenda />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectAgenda /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/documentos" element={
-              <ProtectedRoute>
-                <ProjectDocuments />
-              </ProtectedRoute>
-            } />
-            <Route path="/projeto/:id/modelagem" element={
-              <ProtectedRoute>
-                <ProjectModeling />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectDocuments /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/treinamentos" element={
-              <ProtectedRoute>
-                <ProjectTrainings />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectTrainings /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/configuracoes" element={
-              <ProtectedRoute>
-                <ProjectSettings />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectSettings /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/comunicados" element={
-              <ProtectedRoute>
-                <ProjectAnnouncements />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectAnnouncements /></ProtectedRoute>
             } />
             <Route path="/projeto/:id/versoes" element={
-              <ProtectedRoute>
-                <ProjectVersions />
-              </ProtectedRoute>
+              <ProtectedRoute><ProjectVersions /></ProtectedRoute>
             } />
             
             {/* Admin routes */}
             <Route path="/admin/empresas" element={
-              <ProtectedRoute>
-                <AdminClients />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminClients /></ProtectedRoute>
             } />
             <Route path="/admin/empresas/:clientId/usuarios" element={
-              <ProtectedRoute>
-                <AdminClientUsers />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminClientUsers /></ProtectedRoute>
             } />
             <Route path="/admin/empresas/:clientId/projetos" element={
-              <ProtectedRoute>
-                <AdminClientProjects />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminClientProjects /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/documentos" element={
-              <ProtectedRoute>
-                <AdminProjectDocuments />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectDocuments /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/treinamentos" element={
-              <ProtectedRoute>
-                <AdminProjectTrainings />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectTrainings /></ProtectedRoute>
             } />
-            
             <Route path="/admin/projetos/:projectId/etapas" element={
-              <ProtectedRoute>
-                <AdminProjectStages />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectStages /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/links" element={
-              <ProtectedRoute>
-                <AdminProjectLinks />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectLinks /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/agenda" element={
-              <ProtectedRoute>
-                <AdminProjectMilestones />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectMilestones /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/comunicados" element={
-              <ProtectedRoute>
-                <AdminProjectAnnouncements />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectAnnouncements /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/versoes" element={
-              <ProtectedRoute>
-                <AdminProjectVersions />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminProjectVersions /></ProtectedRoute>
             } />
-            
             <Route path="/admin/treinamentos" element={
-              <ProtectedRoute>
-                <AdminGlobalTrainings />
-              </ProtectedRoute>
+              <ProtectedRoute><AdminGlobalTrainings /></ProtectedRoute>
             } />
             
             {/* Global Trainings */}
             <Route path="/treinamentos" element={
-              <ProtectedRoute>
-                <GlobalTrainings />
-              </ProtectedRoute>
+              <ProtectedRoute><GlobalTrainings /></ProtectedRoute>
             } />
             
             {/* Support */}
             <Route path="/suporte" element={
-              <ProtectedRoute>
-                <Support />
-              </ProtectedRoute>
+              <ProtectedRoute><Support /></ProtectedRoute>
             } />
             
             {/* Redirects */}
