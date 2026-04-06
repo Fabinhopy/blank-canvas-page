@@ -26,7 +26,6 @@ import {
   FolderKanban, 
   ChevronRight, 
   FileText, 
-  Database, 
   GraduationCap,
   Settings,
   Loader2,
@@ -39,15 +38,15 @@ import {
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
+// Logical order: Overview → Agenda → Progress → Docs → Trainings → Versions → Announcements → Settings
 const projectSubMenuItems = [
   { title: 'Visão Geral', path: '', icon: LayoutDashboard },
-  { title: 'Progresso', path: '/progresso', icon: BarChart3 },
   { title: 'Agenda', path: '/agenda', icon: CalendarDays },
-  { title: 'Comunicados', path: '/comunicados', icon: Megaphone },
-  { title: 'Versões', path: '/versoes', icon: Tag },
+  { title: 'Progresso', path: '/progresso', icon: BarChart3 },
   { title: 'Documentos', path: '/documentos', icon: FileText },
-  { title: 'Modelagem', path: '/modelagem', icon: Database },
   { title: 'Treinamentos', path: '/treinamentos', icon: GraduationCap },
+  { title: 'Versões', path: '/versoes', icon: Tag },
+  { title: 'Comunicados', path: '/comunicados', icon: Megaphone },
   { title: 'Configurações', path: '/configuracoes', icon: Settings },
 ];
 
@@ -62,51 +61,34 @@ export function AppSidebar() {
   const { data: openTicketsCount } = useOpenTicketsCount();
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
 
-  // Auto-open current project
   const currentProjectId = projectIdFromParams || location.pathname.match(/\/projeto\/([^/]+)/)?.[1];
 
-  // Get client logo URL if available
   const clientLogoUrl = clientBranding?.logo_url 
     ? supabase.storage.from('client-assets').getPublicUrl(clientBranding.logo_url).data.publicUrl
     : null;
 
-  // Get sidebar color
-  const sidebarColor = clientBranding?.sidebar_color || '#1A1F2C';
-  
   const toggleProject = (projectId: string) => {
-    setOpenProjects(prev => ({
-      ...prev,
-      [projectId]: !prev[projectId]
-    }));
+    setOpenProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
   };
 
   const isProjectOpen = (projectId: string) => {
-    if (openProjects[projectId] !== undefined) {
-      return openProjects[projectId];
-    }
+    if (openProjects[projectId] !== undefined) return openProjects[projectId];
     return projectId === currentProjectId;
   };
 
   const isSubItemActive = (projectId: string, subPath: string) => {
     const basePath = `/projeto/${projectId}`;
-    if (subPath === '') {
-      return location.pathname === basePath;
-    }
-    return location.pathname === `${basePath}${subPath}`;
+    return subPath === '' ? location.pathname === basePath : location.pathname === `${basePath}${subPath}`;
   };
 
-  // Convert hex to HSL components
   const hexToHslComponents = (hex: string): { h: number; s: number; l: number } | null => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (!result) return null;
-    
     let r = parseInt(result[1], 16) / 255;
     let g = parseInt(result[2], 16) / 255;
     let b = parseInt(result[3], 16) / 255;
-    
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     let h = 0, s = 0, l = (max + min) / 2;
-
     if (max !== min) {
       const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -116,25 +98,17 @@ export function AppSidebar() {
         case b: h = ((r - g) / d + 4) / 6; break;
       }
     }
-    
     return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
   };
 
   const getSidebarStyles = (): React.CSSProperties | undefined => {
     if (isAdmin || !clientBranding?.sidebar_color) return undefined;
-    
     const hsl = hexToHslComponents(clientBranding.sidebar_color);
     if (!hsl) return undefined;
-    
-    // Generate contrasting colors based on the base color
     const baseHsl = `${hsl.h} ${hsl.s}% ${hsl.l}%`;
-    // Accent: slightly lighter for buttons
     const accentHsl = `${hsl.h} ${Math.max(hsl.s - 10, 0)}% ${Math.min(hsl.l + 15, 50)}%`;
-    // Border: subtle separator
     const borderHsl = `${hsl.h} ${Math.max(hsl.s - 15, 0)}% ${Math.min(hsl.l + 20, 55)}%`;
-    // Muted: for labels
     const mutedHsl = `${hsl.h} ${Math.max(hsl.s - 20, 0)}% ${Math.min(hsl.l + 25, 60)}%`;
-    
     return {
       '--sidebar-background': baseHsl,
       '--sidebar-accent': accentHsl,
@@ -144,10 +118,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar 
-      className="border-r-0"
-      style={getSidebarStyles()}
-    >
+    <Sidebar className="border-r-0" style={getSidebarStyles()}>
       <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border px-4">
         {!collapsed ? (
           clientLogoUrl && !isAdmin ? (
@@ -165,7 +136,7 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent className="px-2 py-4">
-        {/* Dashboard Link */}
+        {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -174,6 +145,14 @@ export function AppSidebar() {
                   <NavLink to="/dashboard" className="flex items-center gap-3">
                     <LayoutDashboard className="h-4 w-4" />
                     {!collapsed && <span>Dashboard</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/agenda'}>
+                  <NavLink to="/agenda" className="flex items-center gap-3">
+                    <CalendarDays className="h-4 w-4" />
+                    {!collapsed && <span>Agenda Geral</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -305,6 +284,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
         {/* SAC / Support */}
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>

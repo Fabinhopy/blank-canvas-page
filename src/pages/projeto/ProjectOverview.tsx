@@ -60,9 +60,8 @@ export default function ProjectOverview() {
 
   const quickLinks = [
     { title: 'Documentos', description: `${documents?.length || 0} arquivos`, icon: FileText, path: 'documentos' },
-    { title: 'Modelagem', description: `${documents?.filter(d => d.document_type === 'data_modeling').length || 0} documentos`, icon: Database, path: 'modelagem' },
     { title: 'Treinamentos', description: `${videos?.length || 0} arquivos`, icon: Video, path: 'treinamentos' },
-    { title: 'Configurações', description: 'Detalhes do projeto', icon: Settings, path: 'configuracoes' },
+    { title: 'Versões', description: 'Histórico de versões', icon: Settings, path: 'versoes' },
   ];
 
   return (

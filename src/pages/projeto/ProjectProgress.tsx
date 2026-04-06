@@ -1,22 +1,19 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
-import { useProjectStages, ProjectStage } from '@/hooks/useProjectStages';
-import { useProjectStageItems, useCreateStageItem, useUpdateStageItem, useDeleteStageItem } from '@/hooks/useProjectStageItems';
+import { useProjectStages } from '@/hooks/useProjectStages';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { StageChecklist } from '@/components/projeto/StageChecklist';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
   ClipboardList, Database, Code, TestTube, Rocket,
-  CheckCircle2, Circle, Loader2, ArrowLeft, Plus, Trash2, ChevronDown, ChevronRight
+  CheckCircle2, Circle, Loader2, ArrowLeft, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
 
 const stageIcons: Record<string, React.ElementType> = {
   'Levantamento': ClipboardList,
@@ -152,7 +149,7 @@ export default function ProjectProgress() {
                   </CardHeader>
                   {isExpanded && (
                     <CardContent className="pt-0">
-                      <StageChecklist stageId={stage.id} isAdmin={isAdmin} />
+                      <StageChecklist stageId={stage.id} projectId={id!} isAdmin={isAdmin} />
                     </CardContent>
                   )}
                 </Card>
@@ -172,137 +169,5 @@ export default function ProjectProgress() {
         )}
       </div>
     </AppLayout>
-  );
-}
-
-function StageChecklist({ stageId, isAdmin }: { stageId: string; isAdmin: boolean }) {
-  const { data: items, isLoading } = useProjectStageItems(stageId);
-  const createItem = useCreateStageItem();
-  const updateItem = useUpdateStageItem();
-  const deleteItem = useDeleteStageItem();
-  const [newItemTitle, setNewItemTitle] = useState('');
-
-  const handleAddItem = () => {
-    if (!newItemTitle.trim()) return;
-    createItem.mutate(
-      { stage_id: stageId, title: newItemTitle.trim(), order_index: items?.length || 0 },
-      {
-        onSuccess: () => {
-          setNewItemTitle('');
-          toast.success('Item adicionado!');
-        },
-        onError: (err: Error) => toast.error('Erro: ' + err.message),
-      }
-    );
-  };
-
-  const handleToggle = (itemId: string, currentState: boolean) => {
-    updateItem.mutate({
-      id: itemId,
-      updates: {
-        is_completed: !currentState,
-        completed_at: !currentState ? new Date().toISOString() : null,
-      },
-    });
-  };
-
-  const handleDelete = (itemId: string) => {
-    deleteItem.mutate(itemId, {
-      onSuccess: () => toast.success('Item removido!'),
-      onError: (err: Error) => toast.error('Erro: ' + err.message),
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-4">
-        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  const completedCount = items?.filter(i => i.is_completed).length || 0;
-  const totalCount = items?.length || 0;
-
-  return (
-    <div className="border-t pt-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-foreground">Checklist</h4>
-        {totalCount > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {completedCount}/{totalCount} concluídos
-          </span>
-        )}
-      </div>
-
-      {totalCount > 0 && (
-        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-300"
-            style={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
-          />
-        </div>
-      )}
-
-      <div className="space-y-2">
-        {items?.map((item) => (
-          <div key={item.id} className="flex items-center gap-3 group">
-            <Checkbox
-              checked={item.is_completed}
-              onCheckedChange={() => handleToggle(item.id, item.is_completed)}
-              disabled={!isAdmin}
-            />
-            <span className={cn(
-              'text-sm flex-1',
-              item.is_completed && 'line-through text-muted-foreground'
-            )}>
-              {item.title}
-            </span>
-            {item.completed_at && (
-              <span className="text-xs text-muted-foreground hidden group-hover:inline">
-                {format(new Date(item.completed_at), 'dd/MM', { locale: ptBR })}
-              </span>
-            )}
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleDelete(item.id)}
-              >
-                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {isAdmin && (
-        <div className="flex gap-2">
-          <Input
-            placeholder="Adicionar item..."
-            value={newItemTitle}
-            onChange={(e) => setNewItemTitle(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-            className="h-8 text-sm"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleAddItem}
-            disabled={!newItemTitle.trim() || createItem.isPending}
-            className="h-8"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      )}
-
-      {totalCount === 0 && !isAdmin && (
-        <p className="text-sm text-muted-foreground text-center py-2">
-          Nenhum item registrado nesta etapa.
-        </p>
-      )}
-    </div>
   );
 }
