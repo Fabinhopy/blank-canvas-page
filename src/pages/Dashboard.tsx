@@ -4,13 +4,20 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAllMilestones } from '@/hooks/useAllMilestones';
 import { 
   FolderKanban, 
   FileText, 
   GraduationCap, 
   ArrowRight,
-  Loader2
+  Loader2,
+  CalendarDays,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
+import { format, isPast, isToday } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
