@@ -76,7 +76,7 @@ const App = () => (
             <Route path="/projeto/:id/treinamentos" element={
               <ProtectedRoute><ProjectTrainings /></ProtectedRoute>
             } />
-            </Route>
+            
             {/* Admin routes */}
             <Route path="/admin/empresas" element={
               <ProtectedRoute><AdminClients /></ProtectedRoute>
