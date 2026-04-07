@@ -358,6 +358,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          document_id: string | null
           id: string
           is_completed: boolean
           order_index: number
@@ -368,6 +369,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          document_id?: string | null
           id?: string
           is_completed?: boolean
           order_index?: number
@@ -378,6 +380,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          document_id?: string | null
           id?: string
           is_completed?: boolean
           order_index?: number
@@ -386,6 +389,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_stage_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_stage_items_stage_id_fkey"
             columns: ["stage_id"]
