@@ -27,14 +27,11 @@ import {
   ChevronRight, 
   FileText, 
   GraduationCap,
-  Settings,
   Loader2,
   Building2,
   LifeBuoy,
   BarChart3,
   CalendarDays,
-  Megaphone,
-  Tag,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
@@ -45,9 +42,6 @@ const projectSubMenuItems = [
   { title: 'Progresso', path: '/progresso', icon: BarChart3 },
   { title: 'Documentos', path: '/documentos', icon: FileText },
   { title: 'Treinamentos', path: '/treinamentos', icon: GraduationCap },
-  { title: 'Versões', path: '/versoes', icon: Tag },
-  { title: 'Comunicados', path: '/comunicados', icon: Megaphone },
-  { title: 'Configurações', path: '/configuracoes', icon: Settings },
 ];
 
 export function AppSidebar() {

@@ -13,11 +13,8 @@ import ProfileSettings from "./pages/ProfileSettings";
 import ProjectOverview from "./pages/projeto/ProjectOverview";
 import ProjectDocuments from "./pages/projeto/ProjectDocuments";
 import ProjectTrainings from "./pages/projeto/ProjectTrainings";
-import ProjectSettings from "./pages/projeto/ProjectSettings";
 import ProjectProgress from "./pages/projeto/ProjectProgress";
 import ProjectAgenda from "./pages/projeto/ProjectAgenda";
-import ProjectAnnouncements from "./pages/projeto/ProjectAnnouncements";
-import ProjectVersions from "./pages/projeto/ProjectVersions";
 import GlobalAgenda from "./pages/GlobalAgenda";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
@@ -75,15 +72,6 @@ const App = () => (
             } />
             <Route path="/projeto/:id/treinamentos" element={
               <ProtectedRoute><ProjectTrainings /></ProtectedRoute>
-            } />
-            <Route path="/projeto/:id/configuracoes" element={
-              <ProtectedRoute><ProjectSettings /></ProtectedRoute>
-            } />
-            <Route path="/projeto/:id/comunicados" element={
-              <ProtectedRoute><ProjectAnnouncements /></ProtectedRoute>
-            } />
-            <Route path="/projeto/:id/versoes" element={
-              <ProtectedRoute><ProjectVersions /></ProtectedRoute>
             } />
             
             {/* Admin routes */}

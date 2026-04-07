@@ -4,17 +4,25 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
 import { useProjectMilestones } from '@/hooks/useProjectMilestones';
-import { useProjectAnnouncements } from '@/hooks/useProjectAnnouncements';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  FileText, Database, Video, Settings, ArrowRight, Loader2, Calendar,
-  BarChart3, CalendarDays, CheckCircle2, Clock, Megaphone
+  FileText, Video, ArrowRight, Loader2, Calendar,
+  BarChart3, CalendarDays, CheckCircle2, Clock, GraduationCap
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isSameDay, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+function computeStatus(dueDate: string): string {
+  const date = new Date(dueDate + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (isSameDay(date, today)) return 'in_progress';
+  if (isPast(date)) return 'completed';
+  return 'pending';
+}
 
 export default function ProjectOverview() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +31,6 @@ export default function ProjectOverview() {
   const { data: videos } = useVideos(id);
   const { data: stages } = useProjectStages(id);
   const { data: milestones } = useProjectMilestones(id);
-  const { data: announcements } = useProjectAnnouncements(id);
 
   if (projectLoading) {
     return (
@@ -55,14 +62,11 @@ export default function ProjectOverview() {
   const currentStage = stages?.find(s => s.status === 'in_progress');
   
   const upcomingMilestones = milestones
-    ?.filter(m => m.status !== 'completed' && m.status !== 'cancelled')
+    ?.filter(m => {
+      const auto = computeStatus(m.due_date);
+      return auto !== 'completed' && m.status !== 'cancelled';
+    })
     .slice(0, 3) || [];
-
-  const quickLinks = [
-    { title: 'Documentos', description: `${documents?.length || 0} arquivos`, icon: FileText, path: 'documentos' },
-    { title: 'Treinamentos', description: `${videos?.length || 0} arquivos`, icon: Video, path: 'treinamentos' },
-    { title: 'Versões', description: 'Histórico de versões', icon: Settings, path: 'versoes' },
-  ];
 
   return (
     <AppLayout>
@@ -88,8 +92,8 @@ export default function ProjectOverview() {
           </div>
         </div>
 
-        {/* Progress, Agenda & Comunicados Summary */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Progress Summary */}
           <Card className="hover:shadow-md transition-shadow group">
             <Link to={`/projeto/${id}/progresso`}>
@@ -137,7 +141,7 @@ export default function ProjectOverview() {
                   <div className="space-y-2">
                     {upcomingMilestones.map((m) => (
                       <div key={m.id} className="flex items-center gap-2 text-sm">
-                        {m.status === 'in_progress' ? (
+                        {computeStatus(m.due_date) === 'in_progress' ? (
                           <Clock className="h-3.5 w-3.5 text-warning shrink-0" />
                         ) : (
                           <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -158,61 +162,38 @@ export default function ProjectOverview() {
               </CardContent>
             </Link>
           </Card>
+        </div>
 
-          {/* Comunicados Summary */}
-          <Card className="hover:shadow-md transition-shadow group">
-            <Link to={`/projeto/${id}/comunicados`}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Megaphone className="h-4 w-4 text-primary" />
-                    Comunicados
-                  </CardTitle>
-                  <span className="text-sm text-muted-foreground">{announcements?.length || 0} posts</span>
-                </div>
+        {/* Quick Stats */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer group">
+            <Link to={`/projeto/${id}/documentos`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Documentos</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </CardHeader>
               <CardContent>
-                {announcements && announcements.length > 0 ? (
-                  <div className="space-y-2">
-                    {announcements.slice(0, 3).map((a) => (
-                      <div key={a.id} className="flex items-center gap-2 text-sm">
-                        <Megaphone className="h-3.5 w-3.5 text-primary/60 shrink-0" />
-                        <span className="truncate flex-1">{a.title}</span>
-                        <span className="text-xs text-muted-foreground shrink-0">
-                          {format(new Date(a.created_at), 'dd/MM', { locale: ptBR })}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Nenhum comunicado</p>
-                )}
+                <p className="text-sm text-muted-foreground">{documents?.length || 0} arquivos</p>
                 <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Ver comunicados <ArrowRight className="ml-1 h-4 w-4" />
+                  Acessar <ArrowRight className="ml-1 h-4 w-4" />
                 </div>
               </CardContent>
             </Link>
           </Card>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {quickLinks.map((item) => (
-            <Card key={item.path} className="hover:shadow-md transition-shadow cursor-pointer group">
-              <Link to={`/projeto/${id}/${item.path}`}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
-                  <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                  <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Acessar <ArrowRight className="ml-1 h-4 w-4" />
-                  </div>
-                </CardContent>
-              </Link>
-            </Card>
-          ))}
+          <Card className="hover:shadow-md transition-shadow cursor-pointer group">
+            <Link to={`/projeto/${id}/treinamentos`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Treinamentos</CardTitle>
+                <GraduationCap className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{videos?.length || 0} vídeos</p>
+                <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Acessar <ArrowRight className="ml-1 h-4 w-4" />
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
         </div>
 
         {/* Dashboard Links */}
