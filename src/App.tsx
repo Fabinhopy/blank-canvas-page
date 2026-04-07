@@ -76,16 +76,7 @@ const App = () => (
             <Route path="/projeto/:id/treinamentos" element={
               <ProtectedRoute><ProjectTrainings /></ProtectedRoute>
             } />
-            <Route path="/projeto/:id/configuracoes" element={
-              <ProtectedRoute><ProjectSettings /></ProtectedRoute>
-            } />
-            <Route path="/projeto/:id/comunicados" element={
-              <ProtectedRoute><ProjectAnnouncements /></ProtectedRoute>
-            } />
-            <Route path="/projeto/:id/versoes" element={
-              <ProtectedRoute><ProjectVersions /></ProtectedRoute>
-            } />
-            
+            </Route>
             {/* Admin routes */}
             <Route path="/admin/empresas" element={
               <ProtectedRoute><AdminClients /></ProtectedRoute>
