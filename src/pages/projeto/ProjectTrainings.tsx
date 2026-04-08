@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
 import { useTrainings, Training, formatDuration } from '@/hooks/useTrainings';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { 
-  GraduationCap,
-  Play,
-  Loader2,
-  Clock,
-  Tag,
-  Download,
-  FileText,
-  Video as VideoIcon,
-  Filter
+  GraduationCap, Play, Loader2, Clock, Tag, Download, FileText,
+  Video as VideoIcon, Filter, Plus, Upload, X
 } from 'lucide-react';
 
 // Component for thumbnail with signed URL loading
@@ -150,9 +150,48 @@ export default function ProjectTrainings() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: trainings, isLoading: trainingsLoading } = useTrainings(id);
+  const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [selectedTraining, setSelectedTraining] = useState<{ training: Training; url: string } | null>(null);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [contentFilter, setContentFilter] = useState<string>('all');
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [trainingName, setTrainingName] = useState('');
+  const [trainingDesc, setTrainingDesc] = useState('');
+  const [trainingTheme, setTrainingTheme] = useState('');
+  const [contentType, setContentType] = useState('video');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUploadTraining = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile || !trainingName.trim() || !id) return;
+    setIsUploading(true);
+    try {
+      const sanitizedName = uploadFile.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${id}/${Date.now()}-${sanitizedName}`;
+      const { error: uploadError } = await supabase.storage.from('videos').upload(filePath, uploadFile);
+      if (uploadError) throw uploadError;
+
+      const { error: insertError } = await (supabase as any).from('videos').insert({
+        project_id: id,
+        name: trainingName,
+        description: trainingDesc || null,
+        video_url: filePath,
+        content_type: contentType,
+        theme: trainingTheme || null,
+      });
+      if (insertError) throw insertError;
+
+      toast.success('Treinamento enviado!');
+      queryClient.invalidateQueries({ queryKey: ['trainings', id] });
+      setShowUpload(false); setUploadFile(null); setTrainingName(''); setTrainingDesc(''); setTrainingTheme('');
+    } catch (err: any) {
+      toast.error('Erro: ' + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const isLoading = projectLoading || trainingsLoading;
 
@@ -266,32 +305,83 @@ export default function ProjectTrainings() {
               Materiais de treinamento do projeto {project.name}
             </p>
           </div>
-          
-          {/* Filter */}
-          {trainings && trainings.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <ToggleGroup 
-                type="single" 
-                value={contentFilter} 
-                onValueChange={(value) => value && setContentFilter(value)}
-                className="bg-muted rounded-lg p-1"
-              >
-                <ToggleGroupItem value="all" className="text-xs px-3">
-                  Todos ({trainings?.length || 0})
-                </ToggleGroupItem>
-                <ToggleGroupItem value="video" className="text-xs px-3">
-                  <VideoIcon className="h-3 w-3 mr-1" />
-                  Vídeos ({videoCount})
-                </ToggleGroupItem>
-                <ToggleGroupItem value="pdf" className="text-xs px-3">
-                  <FileText className="h-3 w-3 mr-1" />
-                  PDFs ({pdfCount})
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button onClick={() => setShowUpload(!showUpload)} className="gap-2">
+                <Plus className="h-4 w-4" /> Novo Treinamento
+              </Button>
+            )}
+            {trainings && trainings.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <ToggleGroup type="single" value={contentFilter} onValueChange={v => v && setContentFilter(v)} className="bg-muted rounded-lg p-1">
+                  <ToggleGroupItem value="all" className="text-xs px-3">Todos ({trainings?.length || 0})</ToggleGroupItem>
+                  <ToggleGroupItem value="video" className="text-xs px-3"><VideoIcon className="h-3 w-3 mr-1" />Vídeos ({videoCount})</ToggleGroupItem>
+                  <ToggleGroupItem value="pdf" className="text-xs px-3"><FileText className="h-3 w-3 mr-1" />PDFs ({pdfCount})</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Upload Form */}
+        {isAdmin && showUpload && (
+          <Card className="border-primary/20">
+            <CardHeader><CardTitle className="text-lg">Upload de Treinamento</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={handleUploadTraining} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome *</Label>
+                    <Input value={trainingName} onChange={e => setTrainingName(e.target.value)} placeholder="Nome do treinamento" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo</Label>
+                    <Select value={contentType} onValueChange={setContentType}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="video">Vídeo</SelectItem>
+                        <SelectItem value="pdf">PDF</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tema</Label>
+                    <Input value={trainingTheme} onChange={e => setTrainingTheme(e.target.value)} placeholder="Ex: Módulo Financeiro" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição</Label>
+                  <Textarea value={trainingDesc} onChange={e => setTrainingDesc(e.target.value)} rows={2} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Arquivo *</Label>
+                  {uploadFile ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-lg">
+                      <VideoIcon className="h-4 w-4 text-primary" />
+                      <span className="text-sm flex-1 truncate">{uploadFile.name}</span>
+                      <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setUploadFile(null)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed rounded-lg p-3">
+                      <Upload className="h-5 w-5" /><span>Clique para selecionar o arquivo</span>
+                      <input type="file" className="hidden" accept={contentType === 'pdf' ? '.pdf' : 'video/*'} onChange={e => setUploadFile(e.target.files?.[0] || null)} />
+                    </label>
+                  )}
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button type="button" variant="outline" onClick={() => setShowUpload(false)}>Cancelar</Button>
+                  <Button type="submit" disabled={isUploading || !uploadFile || !trainingName.trim()}>
+                    {isUploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Enviar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Content */}
         {filteredTrainings.length > 0 ? (
