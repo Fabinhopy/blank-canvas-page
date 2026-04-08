@@ -15,7 +15,7 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react';
-import { format, isPast, isToday } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -26,8 +26,14 @@ export default function Dashboard() {
   const { documentsCount, trainingsCount } = useDashboardStats();
   const { data: milestones } = useAllMilestones();
 
+  // Filter to upcoming only (not past, not cancelled)
   const upcomingMilestones = milestones
-    ?.filter(m => m.status !== 'completed' && m.status !== 'cancelled')
+    ?.filter(m => {
+      const date = new Date(m.due_date + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return date >= today && m.status !== 'cancelled';
+    })
     .slice(0, 5) || [];
 
   return (
@@ -104,8 +110,8 @@ export default function Dashboard() {
             {upcomingMilestones.length > 0 ? (
               <div className="space-y-3">
                 {upcomingMilestones.map((m) => {
-                  const date = new Date(m.due_date);
-                  const isOverdue = isPast(date) && m.status !== 'completed';
+                  const date = new Date(m.due_date + 'T00:00:00');
+                  const today = isToday(date);
                   return (
                     <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted shrink-0 text-center">
@@ -119,8 +125,7 @@ export default function Dashboard() {
                         <p className="text-sm font-medium truncate">{m.title}</p>
                         <p className="text-xs text-muted-foreground">{m.project_name}</p>
                       </div>
-                      {isOverdue && <Badge variant="destructive" className="text-[10px]">Atrasado</Badge>}
-                      {isToday(date) && <Badge className="text-[10px] bg-primary">Hoje</Badge>}
+                      {today && <Badge className="text-[10px] bg-primary">Hoje</Badge>}
                     </div>
                   );
                 })}
