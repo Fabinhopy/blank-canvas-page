@@ -191,12 +191,75 @@ export default function ProjectDocuments() {
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Documentos</h1>
-          <p className="text-muted-foreground mt-1">
-            Documentação técnica e manuais do projeto {project.name}
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Documentos</h1>
+            <p className="text-muted-foreground mt-1">
+              Documentação técnica e manuais do projeto {project.name}
+            </p>
+          </div>
+          {isAdmin && (
+            <Button onClick={() => setShowUpload(!showUpload)} className="gap-2">
+              <Plus className="h-4 w-4" /> Novo Documento
+            </Button>
+          )}
         </div>
+
+        {/* Upload Form */}
+        {isAdmin && showUpload && (
+          <Card className="border-primary/20">
+            <CardHeader><CardTitle className="text-lg">Upload de Documento</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={handleUpload} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome *</Label>
+                    <Input value={docName} onChange={e => setDocName(e.target.value)} placeholder="Nome do documento" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo</Label>
+                    <Select value={docType} onValueChange={setDocType}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="technical_docs">Documentação Técnica</SelectItem>
+                        <SelectItem value="data_modeling">Modelagem de Dados</SelectItem>
+                        <SelectItem value="user_manuals">Manuais de Uso</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição</Label>
+                  <Textarea value={docDesc} onChange={e => setDocDesc(e.target.value)} rows={2} placeholder="Descrição opcional" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Arquivo *</Label>
+                  {uploadFile ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-lg">
+                      <File className="h-4 w-4 text-primary" />
+                      <span className="text-sm flex-1 truncate">{uploadFile.name}</span>
+                      <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setUploadFile(null)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed rounded-lg p-3">
+                      <Upload className="h-5 w-5" /><span>Clique para selecionar o arquivo</span>
+                      <input type="file" className="hidden" onChange={e => setUploadFile(e.target.files?.[0] || null)} />
+                    </label>
+                  )}
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button type="button" variant="outline" onClick={() => setShowUpload(false)}>Cancelar</Button>
+                  <Button type="submit" disabled={isUploading || !uploadFile || !docName.trim()}>
+                    {isUploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Enviar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Documents Tabs */}
         <Tabs defaultValue="all" className="w-full">
