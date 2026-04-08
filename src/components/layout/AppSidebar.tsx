@@ -32,6 +32,7 @@ import {
   LifeBuoy,
   BarChart3,
   CalendarDays,
+  MessageCircle,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
@@ -279,10 +280,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* SAC / Support */}
+        {/* Chat & SAC */}
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/chat'}>
+                  <NavLink to="/chat" className="flex items-center gap-3">
+                    <MessageCircle className="h-4 w-4" />
+                    {!collapsed && <span>Chat</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location.pathname === '/suporte'}>
                   <NavLink to="/suporte" className="flex items-center gap-3">
