@@ -52,7 +52,7 @@ function computeStatus(dueDate: string): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (isSameDay(date, today)) return 'in_progress';
-  if (isPast(date)) return 'completed';
+  if (date < today) return 'completed';
   return 'pending';
 }
 
@@ -139,7 +139,7 @@ export default function GlobalAgenda() {
   }, [currentMonth]);
 
   const getMilestonesForDay = (day: Date) => {
-    return milestonesWithAutoStatus.filter(m => isSameDay(new Date(m.due_date), day));
+    return milestonesWithAutoStatus.filter(m => isSameDay(new Date(m.due_date + 'T00:00:00'), day));
   };
 
   const upcoming = milestonesWithAutoStatus
@@ -322,12 +322,10 @@ export default function GlobalAgenda() {
                   <div className="space-y-3">
                     {upcoming.map(m => {
                       const cfg = typeConfig[m.milestone_type] || typeConfig.entrega;
-                      const date = new Date(m.due_date);
-                      const isOverdue = isPast(date) && !isSameDay(date, new Date());
+                      const date = new Date(m.due_date + 'T00:00:00');
                       return (
                         <div key={m.id} className={cn('flex items-center gap-4 p-3 rounded-lg border transition-all',
-                          isToday(date) && 'border-primary/50 bg-primary/5',
-                          isOverdue && 'border-destructive/50 bg-destructive/5'
+                          isToday(date) && 'border-primary/50 bg-primary/5'
                         )}>
                           <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg shrink-0 text-center',
                             isToday(date) ? 'bg-primary/10' : 'bg-muted'
