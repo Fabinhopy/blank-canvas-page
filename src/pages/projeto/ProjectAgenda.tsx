@@ -40,7 +40,7 @@ function computeStatus(dueDate: string): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (isSameDay(date, today)) return 'in_progress';
-  if (isPast(date)) return 'completed';
+  if (date < today) return 'completed';
   return 'pending';
 }
 

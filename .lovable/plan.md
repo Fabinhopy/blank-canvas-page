@@ -1,28 +1,28 @@
-## Changes
 
-### 1. DB Migration
-- Add `recurrence` column (text, nullable) to `project_milestones` — values: null (one-time), 'weekly', 'monthly'
+## Correções e Novas Funcionalidades
 
-### 2. Sidebar Cleanup
-- Remove Comunicados, Versões, Configurações from project sub-menu
-- Keep only: Visão Geral, Agenda, Progresso, Documentos, Treinamentos
+### 1. Fix Calendar Auto-Status (Concluído em vez de Atrasado)
+- Fix `computeStatus()` em GlobalAgenda e ProjectAgenda para usar "completed" após a data
+- Fix Dashboard milestones para não mostrar "Atrasado", mostrar "Concluído"
+- Fix ProjectRoadmap upcoming filter para usar auto-status
 
-### 3. ProjectOverview Cleanup
-- Remove Comunicados summary card and Versões quick link
-- Keep: Progresso, Agenda, Documentos, Treinamentos
+### 2. Upload direto em Documentos e Treinamentos
+- Adicionar formulário inline para admin subir documentos na página ProjectDocuments
+- Adicionar formulário inline para admin subir treinamentos na página ProjectTrainings
 
-### 4. GlobalAgenda Upgrade
-- Full calendar view with admin create/edit inline
-- Auto-status computation (before=pending, today=in_progress, after=completed)
-- Admin "Novo Marco" button directly on the page
+### 3. Suporte com Projeto Obrigatório
+- DB: Adicionar coluna `project_id` (nullable) à tabela `support_tickets`
+- Adicionar campo Select de projeto (obrigatório) no formulário de ticket com opção "Dúvida Geral"
+- Atualizar hook `useCreateTicket` para incluir project_id
 
-### 5. ProjectAgenda Upgrade
-- Admin can create milestones directly from project agenda page
-- Auto-status computation
+### 4. Layout do Cliente
+- Remover espaçamentos desnecessários no sidebar
+- Limpar Dashboard, Agenda Geral e Treinamentos
 
-### 6. Auto-status
-- Computed client-side based on due_date vs today — no manual status needed
-- Status field removed from create form (auto-computed)
+### 5. Foto de Perfil - Aspect Ratio
+- Usar `object-cover` no Avatar e manter aspect-ratio correto
 
-### 7. Routes
-- Remove /projeto/:id/comunicados, /projeto/:id/versoes, /projeto/:id/configuracoes routes
+### 6. Chat em Tempo Real
+- DB: Criar tabelas `chat_conversations` e `chat_messages`
+- Criar componente de chat com Supabase Realtime
+- Adicionar na sidebar e como página

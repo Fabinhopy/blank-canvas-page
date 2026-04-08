@@ -19,6 +19,7 @@ import GlobalAgenda from "./pages/GlobalAgenda";
 import NotFound from "./pages/NotFound";
 import Support from "./pages/Support";
 import GlobalTrainings from "./pages/GlobalTrainings";
+import Chat from "./pages/Chat";
 
 // Admin Pages
 import AdminClients from "./pages/admin/AdminClients";
@@ -114,9 +115,12 @@ const App = () => (
               <ProtectedRoute><GlobalTrainings /></ProtectedRoute>
             } />
             
-            {/* Support */}
+            {/* Support & Chat */}
             <Route path="/suporte" element={
               <ProtectedRoute><Support /></ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute><Chat /></ProtectedRoute>
             } />
             
             {/* Redirects */}
