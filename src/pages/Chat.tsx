@@ -1,0 +1,250 @@
+import { useState, useRef, useEffect } from 'react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { useConversations, useMessages, useSendMessage, useCreateConversation } from '@/hooks/useChat';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProjects } from '@/hooks/useProjects';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
+import { MessageCircle, Send, Loader2, Plus, Users } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
+
+export default function Chat() {
+  const { user, isAdmin } = useAuth();
+  const { data: conversations, isLoading } = useConversations();
+  const { data: projects } = useProjects();
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const { data: messages, isLoading: messagesLoading } = useMessages(selectedConversationId);
+  const sendMessage = useSendMessage();
+  const createConversation = useCreateConversation();
+  const [messageText, setMessageText] = useState('');
+  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [newProjectId, setNewProjectId] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!messageText.trim() || !selectedConversationId || !user) return;
+    sendMessage.mutate({
+      conversationId: selectedConversationId,
+      content: messageText.trim(),
+      senderId: user.id,
+    });
+    setMessageText('');
+  };
+
+  const handleCreateConversation = async () => {
+    if (!user) return;
+    try {
+      const result = await createConversation.mutateAsync({
+        projectId: newProjectId || null,
+        clientUserId: user.id,
+      });
+      setSelectedConversationId(result.id);
+      setShowNewDialog(false);
+      setNewProjectId('');
+      toast.success('Conversa criada!');
+    } catch {
+      toast.error('Erro ao criar conversa. Verifique se já não existe uma para este projeto.');
+    }
+  };
+
+  const getInitials = (name?: string) => name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+
+  const getAvatarUrl = (path?: string | null) => 
+    path ? supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl : null;
+
+  const selectedConversation = conversations?.find(c => c.id === selectedConversationId);
+
+  return (
+    <AppLayout>
+      <div className="flex h-[calc(100vh-8rem)] gap-4 animate-fade-in">
+        {/* Conversations List */}
+        <Card className="w-80 shrink-0 flex flex-col">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Chat
+              </CardTitle>
+              {!isAdmin && (
+                <Button size="sm" onClick={() => setShowNewDialog(true)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <ScrollArea className="flex-1">
+            <div className="px-4 pb-4 space-y-1">
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : conversations && conversations.length > 0 ? (
+                conversations.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedConversationId(c.id)}
+                    className={`w-full text-left p-3 rounded-lg transition-colors ${
+                      selectedConversationId === c.id ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9 shrink-0">
+                        <AvatarImage src={getAvatarUrl(c.profile?.avatar_url) || undefined} className="object-cover" />
+                        <AvatarFallback className="text-xs">{getInitials(c.profile?.full_name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium truncate">
+                            {isAdmin ? c.profile?.full_name || 'Cliente' : 'Suporte'}
+                          </span>
+                          {(c.unread_count ?? 0) > 0 && (
+                            <Badge variant="destructive" className="h-5 min-w-5 text-[10px] rounded-full px-1.5">
+                              {c.unread_count}
+                            </Badge>
+                          )}
+                        </div>
+                        {c.project?.name && (
+                          <span className="text-[10px] text-muted-foreground">{c.project.name}</span>
+                        )}
+                        {c.last_message && (
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{c.last_message}</p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {isAdmin ? 'Nenhuma conversa ainda' : 'Inicie uma conversa'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </Card>
+
+        {/* Messages Area */}
+        <Card className="flex-1 flex flex-col">
+          {selectedConversation ? (
+            <>
+              {/* Chat Header */}
+              <CardHeader className="pb-3 border-b">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={getAvatarUrl(selectedConversation.profile?.avatar_url) || undefined} className="object-cover" />
+                    <AvatarFallback className="text-xs">{getInitials(selectedConversation.profile?.full_name)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">
+                      {isAdmin ? selectedConversation.profile?.full_name || 'Cliente' : 'Suporte Smartest'}
+                    </p>
+                    {selectedConversation.project?.name && (
+                      <p className="text-xs text-muted-foreground">{selectedConversation.project.name}</p>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+
+              {/* Messages */}
+              <ScrollArea className="flex-1 p-4">
+                {messagesLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {messages?.map(msg => {
+                      const isMe = msg.sender_id === user?.id;
+                      return (
+                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                            isMe 
+                              ? 'bg-primary text-primary-foreground rounded-br-md' 
+                              : 'bg-muted rounded-bl-md'
+                          }`}>
+                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                            <p className={`text-[10px] mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                              {format(new Date(msg.created_at), 'HH:mm', { locale: ptBR })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </ScrollArea>
+
+              {/* Input */}
+              <div className="p-4 border-t">
+                <div className="flex gap-2">
+                  <Input
+                    value={messageText}
+                    onChange={e => setMessageText(e.target.value)}
+                    placeholder="Digite sua mensagem..."
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  />
+                  <Button onClick={handleSend} disabled={!messageText.trim() || sendMessage.isPending}>
+                    {sendMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+              <MessageCircle className="h-12 w-12 mb-4 opacity-30" />
+              <p className="text-lg font-medium">Selecione uma conversa</p>
+              <p className="text-sm">Escolha uma conversa ao lado para começar</p>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* New Conversation Dialog */}
+      <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova Conversa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Projeto (opcional)</label>
+              <Select value={newProjectId} onValueChange={setNewProjectId}>
+                <SelectTrigger><SelectValue placeholder="Selecione o projeto" /></SelectTrigger>
+                <SelectContent>
+                  {projects?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewDialog(false)}>Cancelar</Button>
+            <Button onClick={handleCreateConversation} disabled={createConversation.isPending}>
+              {createConversation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Iniciar Conversa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AppLayout>
+  );
+}
