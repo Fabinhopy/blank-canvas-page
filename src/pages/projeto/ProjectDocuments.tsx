@@ -1,20 +1,23 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
 import { useDocuments, getDocumentTypeLabel, Document } from '@/hooks/useDocuments';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  FileText, 
-  Download,
-  Eye,
-  Loader2,
-  File,
-  Calendar
+  FileText, Download, Eye, Loader2, File, Calendar, Plus, Upload, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 function formatFileSize(bytes: number | null): string {
   if (!bytes) return '—';
@@ -89,8 +92,45 @@ export default function ProjectDocuments() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: documents, isLoading: docsLoading } = useDocuments(id);
+  const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
 
-  const isLoading = projectLoading || docsLoading;
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [docName, setDocName] = useState('');
+  const [docDesc, setDocDesc] = useState('');
+  const [docType, setDocType] = useState<string>('technical_docs');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile || !docName.trim() || !id) return;
+    setIsUploading(true);
+    try {
+      const sanitizedName = uploadFile.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${id}/${Date.now()}-${sanitizedName}`;
+      const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, uploadFile);
+      if (uploadError) throw uploadError;
+
+      const { error: insertError } = await supabase.from('documents').insert({
+        project_id: id,
+        name: docName,
+        description: docDesc || null,
+        document_type: docType as any,
+        file_path: filePath,
+        file_size: uploadFile.size,
+      });
+      if (insertError) throw insertError;
+
+      toast.success('Documento enviado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['documents', id] });
+      setShowUpload(false); setUploadFile(null); setDocName(''); setDocDesc(''); setDocType('technical_docs');
+    } catch (err: any) {
+      toast.error('Erro ao enviar: ' + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   if (isLoading) {
     return (
