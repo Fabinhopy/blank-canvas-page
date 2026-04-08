@@ -53,7 +53,7 @@ export function useConversations() {
       ]);
 
       const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
-      const projectMap = new Map(((projectsRes as any).data || []).map((p: any) => [p.id, p]));
+      const projectMap = new Map<string, { id: string; name: string }>(((projectsRes as any).data || []).map((p: any) => [p.id, p]));
       const messages = (messagesRes.data || []) as any[];
 
       return conversations.map(c => {
