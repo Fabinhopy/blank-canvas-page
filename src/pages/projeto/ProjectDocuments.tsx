@@ -132,6 +132,8 @@ export default function ProjectDocuments() {
     }
   };
 
+  const isLoading = projectLoading || docsLoading;
+
   if (isLoading) {
     return (
       <AppLayout>
