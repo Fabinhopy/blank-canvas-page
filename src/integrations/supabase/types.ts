@@ -318,6 +318,7 @@ export type Database = {
           id: string
           milestone_type: string
           project_id: string
+          recurrence: string | null
           status: string
           title: string
           updated_at: string
@@ -329,6 +330,7 @@ export type Database = {
           id?: string
           milestone_type?: string
           project_id: string
+          recurrence?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -340,6 +342,7 @@ export type Database = {
           id?: string
           milestone_type?: string
           project_id?: string
+          recurrence?: string | null
           status?: string
           title?: string
           updated_at?: string
