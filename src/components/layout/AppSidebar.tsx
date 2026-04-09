@@ -151,6 +151,16 @@ export function AppSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {!isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/treinamentos'}>
+                    <NavLink to="/treinamentos" className="flex items-center gap-3">
+                      <GraduationCap className="h-4 w-4" />
+                      {!collapsed && <span>Treinamentos</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -188,23 +198,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* Global Trainings - only for non-admin users */}
-        {!isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/treinamentos'}>
-                    <NavLink to="/treinamentos" className="flex items-center gap-3">
-                      <GraduationCap className="h-4 w-4" />
-                      {!collapsed && <span>Treinamentos</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        {/* Global Trainings - only for non-admin users, inside main nav group */}
 
         {/* Projects List */}
         <SidebarGroup>
