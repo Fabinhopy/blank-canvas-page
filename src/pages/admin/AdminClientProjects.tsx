@@ -55,6 +55,8 @@ interface Project {
   name: string;
   description: string | null;
   status: string | null;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
 }
 
@@ -66,7 +68,9 @@ export default function AdminClientProjects() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'active'
+    status: 'active',
+    start_date: '',
+    end_date: '',
   });
 
   const { data: client } = useQuery({
