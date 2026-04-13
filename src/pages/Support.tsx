@@ -267,6 +267,12 @@ export default function Support() {
                                   <Clock className="h-3 w-3" />
                                   {format(new Date(ticket.created_at), "dd MMM yyyy 'às' HH:mm", { locale: ptBR })}
                                 </span>
+                                {ticket.project_name && (
+                                  <span className="flex items-center gap-1">
+                                    <FolderKanban className="h-3 w-3" />
+                                    {ticket.project_name}
+                                  </span>
+                                )}
                                 {isAdmin && ticket.profiles && (
                                   <span>por {(ticket.profiles as any)?.full_name || 'Usuário'}</span>
                                 )}
