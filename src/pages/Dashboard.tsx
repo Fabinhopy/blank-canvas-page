@@ -29,7 +29,7 @@ export default function Dashboard() {
   const { data: projects, isLoading } = useProjects();
   const { documentsCount, trainingsCount, stagesByProject } = useDashboardStats();
   const { data: milestones } = useAllMilestones();
-  const openTickets = useOpenTicketsCount();
+  const { data: openTickets = 0 } = useOpenTicketsCount();
 
   const upcomingMilestones = milestones
     ?.filter(m => {
