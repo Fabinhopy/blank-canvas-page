@@ -6,6 +6,8 @@ import {
   Code, 
   TestTube, 
   Rocket,
+  TrendingUp,
+  Wrench,
   CheckCircle2,
   Circle,
   Loader2
@@ -25,6 +27,8 @@ const stageIcons: Record<string, React.ElementType> = {
   'Desenvolvimento': Code,
   'Homologação': TestTube,
   'Produção': Rocket,
+  'Evolução': TrendingUp,
+  'Suporte': Wrench,
 };
 
 export function ProjectProgressTimeline({ stages, isLoading }: ProjectProgressTimelineProps) {

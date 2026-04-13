@@ -8,7 +8,6 @@ export function useDashboardStats() {
       const { count, error } = await supabase
         .from('documents')
         .select('*', { count: 'exact', head: true });
-
       if (error) throw error;
       return count || 0;
     },
@@ -20,15 +19,31 @@ export function useDashboardStats() {
       const { count, error } = await supabase
         .from('videos')
         .select('*', { count: 'exact', head: true });
-
       if (error) throw error;
       return count || 0;
+    },
+  });
+
+  const stagesQuery = useQuery({
+    queryKey: ['dashboard-stages-by-project'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('project_stages')
+        .select('project_id, status');
+      if (error) throw error;
+      const grouped: Record<string, { status: string }[]> = {};
+      for (const row of data || []) {
+        if (!grouped[row.project_id]) grouped[row.project_id] = [];
+        grouped[row.project_id].push({ status: row.status });
+      }
+      return grouped;
     },
   });
 
   return {
     documentsCount: documentsQuery.data ?? 0,
     trainingsCount: trainingsQuery.data ?? 0,
-    isLoading: documentsQuery.isLoading || trainingsQuery.isLoading,
+    stagesByProject: stagesQuery.data ?? {},
+    isLoading: documentsQuery.isLoading || trainingsQuery.isLoading || stagesQuery.isLoading,
   };
 }

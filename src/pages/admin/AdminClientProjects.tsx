@@ -55,6 +55,8 @@ interface Project {
   name: string;
   description: string | null;
   status: string | null;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
 }
 
@@ -66,7 +68,9 @@ export default function AdminClientProjects() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'active'
+    status: 'active',
+    start_date: '',
+    end_date: '',
   });
 
   const { data: client } = useQuery({
@@ -94,7 +98,7 @@ export default function AdminClientProjects() {
         .order('name');
       
       if (error) throw error;
-      return data as Project[];
+      return data as unknown as Project[];
     },
     enabled: !!clientId
   });
@@ -107,8 +111,10 @@ export default function AdminClientProjects() {
           client_id: clientId,
           name: data.name,
           description: data.description || null,
-          status: data.status
-        });
+          status: data.status,
+          start_date: data.start_date || null,
+          end_date: data.end_date || null,
+        } as any);
       
       if (error) throw error;
     },
@@ -130,8 +136,10 @@ export default function AdminClientProjects() {
         .update({
           name: data.name,
           description: data.description || null,
-          status: data.status
-        })
+          status: data.status,
+          start_date: data.start_date || null,
+          end_date: data.end_date || null,
+        } as any)
         .eq('id', id);
       
       if (error) throw error;
@@ -169,7 +177,7 @@ export default function AdminClientProjects() {
   const handleClose = () => {
     setIsOpen(false);
     setEditingProject(null);
-    setFormData({ name: '', description: '', status: 'active' });
+    setFormData({ name: '', description: '', status: 'active', start_date: '', end_date: '' });
   };
 
   const handleEdit = (project: Project) => {
@@ -177,7 +185,9 @@ export default function AdminClientProjects() {
     setFormData({
       name: project.name,
       description: project.description || '',
-      status: project.status || 'active'
+      status: project.status || 'active',
+      start_date: project.start_date || '',
+      end_date: project.end_date || '',
     });
     setIsOpen(true);
   };
@@ -216,7 +226,7 @@ export default function AdminClientProjects() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active' }); }}>
+              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', start_date: '', end_date: '' }); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Projeto
               </Button>
@@ -268,6 +278,26 @@ export default function AdminClientProjects() {
                         <SelectItem value="archived">Arquivado</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="start_date">Data de Início</Label>
+                      <Input
+                        id="start_date"
+                        type="date"
+                        value={formData.start_date}
+                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="end_date">Data de Término</Label>
+                      <Input
+                        id="end_date"
+                        type="date"
+                        value={formData.end_date}
+                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                      />
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>

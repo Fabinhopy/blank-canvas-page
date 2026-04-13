@@ -8,11 +8,12 @@ import { StageChecklist } from '@/components/projeto/StageChecklist';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  ClipboardList, Database, Code, TestTube, Rocket,
-  CheckCircle2, Circle, Loader2, ArrowLeft, ChevronDown, ChevronRight
+  ClipboardList, Database, Code, TestTube, Rocket, TrendingUp, Wrench,
+  CheckCircle2, Circle, Loader2, ArrowLeft, ChevronDown, ChevronRight,
+  TableIcon, BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const stageIcons: Record<string, React.ElementType> = {
@@ -21,7 +22,11 @@ const stageIcons: Record<string, React.ElementType> = {
   'Desenvolvimento': Code,
   'Homologação': TestTube,
   'Produção': Rocket,
+  'Evolução': TrendingUp,
+  'Suporte': Wrench,
 };
+
+type ViewMode = 'table' | 'gantt';
 
 export default function ProjectProgress() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +34,7 @@ export default function ProjectProgress() {
   const { data: stages, isLoading } = useProjectStages(id);
   const { isAdmin } = useAuth();
   const [expandedStage, setExpandedStage] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
   const completedCount = stages?.filter(s => s.status === 'completed').length || 0;
   const totalCount = stages?.length || 1;
@@ -50,6 +56,26 @@ export default function ProjectProgress() {
             </div>
             <h1 className="text-2xl font-bold text-foreground">Progresso do Projeto</h1>
           </div>
+          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="gap-1.5"
+            >
+              <TableIcon className="h-4 w-4" />
+              Tabela
+            </Button>
+            <Button
+              variant={viewMode === 'gantt' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('gantt')}
+              className="gap-1.5"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Gantt
+            </Button>
+          </div>
         </div>
 
         {/* Summary Card */}
@@ -65,97 +91,36 @@ export default function ProjectProgress() {
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            {currentStage && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Etapa atual: <span className="font-medium text-foreground">{currentStage.stage_name}</span>
-              </p>
-            )}
+            <div className="flex items-center gap-4 mt-2">
+              {currentStage && (
+                <p className="text-sm text-muted-foreground">
+                  Etapa atual: <span className="font-medium text-foreground">{currentStage.stage_name}</span>
+                </p>
+              )}
+              {progressPercent === 100 && (
+                <p className="text-sm font-medium text-primary">✅ Projeto Concluído</p>
+              )}
+            </div>
           </CardHeader>
         </Card>
 
-        {/* Stages */}
+        {/* View Toggle Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : stages && stages.length > 0 ? (
-          <div className="space-y-3">
-            {stages.map((stage) => {
-              const Icon = stageIcons[stage.stage_name] || Circle;
-              const isCompleted = stage.status === 'completed';
-              const isInProgress = stage.status === 'in_progress';
-              const isExpanded = expandedStage === stage.id;
-
-              return (
-                <Card 
-                  key={stage.id} 
-                  className={cn(
-                    'transition-all cursor-pointer',
-                    isInProgress && 'border-primary/50 shadow-md',
-                    isCompleted && 'border-primary/30'
-                  )}
-                >
-                  <CardHeader 
-                    className="pb-2 cursor-pointer"
-                    onClick={() => setExpandedStage(isExpanded ? null : stage.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-full border-2 shrink-0',
-                        isCompleted && 'border-primary bg-primary text-primary-foreground',
-                        isInProgress && 'border-primary bg-accent text-primary',
-                        !isCompleted && !isInProgress && 'border-muted-foreground/30 bg-muted text-muted-foreground'
-                      )}>
-                        {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className={cn(
-                            'text-base',
-                            isInProgress && 'text-primary',
-                            !isCompleted && !isInProgress && 'text-muted-foreground'
-                          )}>
-                            {stage.stage_name}
-                          </CardTitle>
-                          <div className="flex items-center gap-2">
-                            <span className={cn(
-                              'text-xs px-2 py-0.5 rounded-full',
-                              isCompleted && 'bg-primary/10 text-primary',
-                              isInProgress && 'bg-warning/10 text-warning',
-                              !isCompleted && !isInProgress && 'bg-muted text-muted-foreground'
-                            )}>
-                              {isCompleted ? 'Concluída' : isInProgress ? 'Em Andamento' : 'Pendente'}
-                            </span>
-                            {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-                          </div>
-                        </div>
-                        {stage.notes && (
-                          <CardDescription className="mt-0.5">{stage.notes}</CardDescription>
-                        )}
-                        <div className="flex gap-3 mt-1">
-                          {stage.started_at && (
-                            <span className="text-xs text-muted-foreground">
-                              Início: {format(new Date(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
-                            </span>
-                          )}
-                          {stage.completed_at && (
-                            <span className="text-xs text-muted-foreground">
-                              Concluído: {format(new Date(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  {isExpanded && (
-                    <CardContent className="pt-0">
-                      <StageChecklist stageId={stage.id} projectId={id!} isAdmin={isAdmin} />
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
+          viewMode === 'table' ? (
+            <TableView
+              stages={stages}
+              expandedStage={expandedStage}
+              setExpandedStage={setExpandedStage}
+              projectId={id!}
+              isAdmin={isAdmin}
+            />
+          ) : (
+            <GanttView stages={stages} project={project} />
+          )
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -169,5 +134,195 @@ export default function ProjectProgress() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+function TableView({ stages, expandedStage, setExpandedStage, projectId, isAdmin }: {
+  stages: any[];
+  expandedStage: string | null;
+  setExpandedStage: (id: string | null) => void;
+  projectId: string;
+  isAdmin: boolean;
+}) {
+  return (
+    <div className="space-y-3">
+      {stages.map((stage) => {
+        const Icon = stageIcons[stage.stage_name] || Circle;
+        const isCompleted = stage.status === 'completed';
+        const isInProgress = stage.status === 'in_progress';
+        const isExpanded = expandedStage === stage.id;
+
+        return (
+          <Card 
+            key={stage.id} 
+            className={cn(
+              'transition-all cursor-pointer',
+              isInProgress && 'border-primary/50 shadow-md',
+              isCompleted && 'border-primary/30'
+            )}
+          >
+            <CardHeader 
+              className="pb-2 cursor-pointer"
+              onClick={() => setExpandedStage(isExpanded ? null : stage.id)}
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-full border-2 shrink-0',
+                  isCompleted && 'border-primary bg-primary text-primary-foreground',
+                  isInProgress && 'border-primary bg-accent text-primary',
+                  !isCompleted && !isInProgress && 'border-muted-foreground/30 bg-muted text-muted-foreground'
+                )}>
+                  {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className={cn(
+                      'text-base',
+                      isInProgress && 'text-primary',
+                      !isCompleted && !isInProgress && 'text-muted-foreground'
+                    )}>
+                      {stage.stage_name}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        'text-xs px-2 py-0.5 rounded-full',
+                        isCompleted && 'bg-primary/10 text-primary',
+                        isInProgress && 'bg-warning/10 text-warning',
+                        !isCompleted && !isInProgress && 'bg-muted text-muted-foreground'
+                      )}>
+                        {isCompleted ? 'Concluída' : isInProgress ? 'Em Andamento' : 'Pendente'}
+                      </span>
+                      {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                    </div>
+                  </div>
+                  {stage.notes && (
+                    <CardDescription className="mt-0.5">{stage.notes}</CardDescription>
+                  )}
+                  <div className="flex gap-3 mt-1">
+                    {stage.started_at && (
+                      <span className="text-xs text-muted-foreground">
+                        Início: {format(new Date(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
+                      </span>
+                    )}
+                    {stage.completed_at && (
+                      <span className="text-xs text-muted-foreground">
+                        Concluído: {format(new Date(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            {isExpanded && (
+              <CardContent className="pt-0">
+                <StageChecklist stageId={stage.id} projectId={projectId} isAdmin={isAdmin} />
+              </CardContent>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function GanttView({ stages, project }: { stages: any[]; project: any }) {
+  const stagesWithDates = stages.filter(s => s.started_at);
+  const allDates = stagesWithDates.flatMap(s => {
+    const dates = [new Date(s.started_at)];
+    if (s.completed_at) dates.push(new Date(s.completed_at));
+    return dates;
+  });
+
+  if (allDates.length === 0) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-medium">Sem dados para o Gantt</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            As etapas precisam ter datas de início para visualizar o gráfico de Gantt.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+  const maxDate = new Date(Math.max(...allDates.map(d => d.getTime()), Date.now()));
+  const totalDays = Math.max(differenceInDays(maxDate, minDate), 1);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          Gráfico de Gantt
+        </CardTitle>
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+          <span>{format(minDate, 'dd/MM/yyyy', { locale: ptBR })}</span>
+          <span>{format(maxDate, 'dd/MM/yyyy', { locale: ptBR })}</span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {stages.map((stage) => {
+            const Icon = stageIcons[stage.stage_name] || Circle;
+            const isCompleted = stage.status === 'completed';
+            const isInProgress = stage.status === 'in_progress';
+
+            let leftPercent = 0;
+            let widthPercent = 0;
+
+            if (stage.started_at) {
+              const start = new Date(stage.started_at);
+              const end = stage.completed_at ? new Date(stage.completed_at) : new Date();
+              leftPercent = (differenceInDays(start, minDate) / totalDays) * 100;
+              widthPercent = Math.max((differenceInDays(end, start) / totalDays) * 100, 2);
+            }
+
+            return (
+              <div key={stage.id} className="flex items-center gap-3">
+                <div className="w-36 shrink-0 flex items-center gap-2">
+                  <Icon className={cn(
+                    'h-4 w-4 shrink-0',
+                    isCompleted ? 'text-primary' : isInProgress ? 'text-warning' : 'text-muted-foreground'
+                  )} />
+                  <span className="text-sm truncate">{stage.stage_name}</span>
+                </div>
+                <div className="flex-1 h-8 bg-muted rounded-md relative overflow-hidden">
+                  {stage.started_at && (
+                    <div
+                      className={cn(
+                        'absolute top-1 bottom-1 rounded transition-all',
+                        isCompleted ? 'bg-primary' : isInProgress ? 'bg-warning' : 'bg-muted-foreground/30'
+                      )}
+                      style={{
+                        left: `${leftPercent}%`,
+                        width: `${widthPercent}%`,
+                        minWidth: '8px',
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-6 mt-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded bg-primary" />
+            <span>Concluída</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded bg-warning" />
+            <span>Em Andamento</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded bg-muted-foreground/30" />
+            <span>Pendente</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
