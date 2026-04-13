@@ -40,6 +40,17 @@ export function useSupportTickets() {
       if (error) throw error;
       const tickets = (data || []) as unknown as SupportTicket[];
 
+      // Fetch project names for tickets with project_id
+      const projectIds = [...new Set(tickets.filter(t => t.project_id).map(t => t.project_id!))];
+      let projectMap = new Map<string, string>();
+      if (projectIds.length > 0) {
+        const { data: projects } = await supabase
+          .from('projects')
+          .select('id, name')
+          .in('id', projectIds);
+        projectMap = new Map((projects || []).map(p => [p.id, p.name]));
+      }
+
       // For admin, fetch profile names for each unique user_id
       if (isAdmin && tickets.length > 0) {
         const userIds = [...new Set(tickets.map(t => t.user_id))];
@@ -52,10 +63,14 @@ export function useSupportTickets() {
         return tickets.map(t => ({
           ...t,
           profiles: profileMap.get(t.user_id) || null,
+          project_name: t.project_id ? projectMap.get(t.project_id) || null : null,
         }));
       }
 
-      return tickets;
+      return tickets.map(t => ({
+        ...t,
+        project_name: t.project_id ? projectMap.get(t.project_id) || null : null,
+      }));
     },
     enabled: !!user,
   });
