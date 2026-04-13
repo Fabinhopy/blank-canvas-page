@@ -119,12 +119,10 @@ export default function AdminProjectStages() {
           </div>
         </div>
 
-        {/* Preview */}
         {stages && stages.length > 0 && (
           <ProjectProgressTimeline stages={stages} />
         )}
 
-        {/* Management Table */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -134,7 +132,7 @@ export default function AdminProjectStages() {
                   Gerenciar Etapas
                 </CardTitle>
                 <CardDescription>
-                  Atualize o status e observações de cada etapa do projeto.
+                  Atualize o status e observações de cada etapa do projeto. Inclui Evolução e Suporte pós-produção.
                 </CardDescription>
               </div>
               {stages && stages.length === 0 && (
