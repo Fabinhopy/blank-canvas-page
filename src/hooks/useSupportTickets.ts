@@ -13,10 +13,12 @@ export interface SupportTicket {
   responded_at: string | null;
   responded_by: string | null;
   attachment_url: string | null;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
   // joined
   profiles?: { full_name: string; avatar_url: string | null } | null;
+  project_name?: string | null;
 }
 
 export function useSupportTickets() {
