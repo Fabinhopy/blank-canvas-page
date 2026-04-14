@@ -45,6 +45,7 @@ export function useCreateStageItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-stage-items'] });
+      queryClient.invalidateQueries({ queryKey: ['all-stage-items'] });
     },
   });
 }
@@ -61,6 +62,7 @@ export function useUpdateStageItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-stage-items'] });
+      queryClient.invalidateQueries({ queryKey: ['all-stage-items'] });
     },
   });
 }
@@ -77,6 +79,7 @@ export function useDeleteStageItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-stage-items'] });
+      queryClient.invalidateQueries({ queryKey: ['all-stage-items'] });
     },
   });
 }
