@@ -45,8 +45,6 @@ import {
   BarChart3,
   Link2,
   CalendarDays,
-  Megaphone,
-  Tag
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -388,16 +386,6 @@ export default function AdminClientProjects() {
                           <Button variant="ghost" size="icon" asChild title="Agenda de Entregas">
                             <Link to={`/admin/projetos/${project.id}/agenda`}>
                               <CalendarDays className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild title="Comunicados">
-                            <Link to={`/admin/projetos/${project.id}/comunicados`}>
-                              <Megaphone className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild title="Versões">
-                            <Link to={`/admin/projetos/${project.id}/versoes`}>
-                              <Tag className="h-4 w-4" />
                             </Link>
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>

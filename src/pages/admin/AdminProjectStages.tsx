@@ -5,14 +5,9 @@ import { useProject } from '@/hooks/useProjects';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -33,6 +28,34 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProjectProgressTimeline } from '@/components/projeto/ProjectProgressTimeline';
+import { useProjectStageItems } from '@/hooks/useProjectStageItems';
+import { cn } from '@/lib/utils';
+
+function StageStatusCell({ stageId }: { stageId: string }) {
+  const { data: items } = useProjectStageItems(stageId);
+  const total = items?.length || 0;
+  const completed = items?.filter(i => i.is_completed).length || 0;
+  const status = total === 0 ? 'pending' : completed === total ? 'completed' : completed > 0 ? 'in_progress' : 'pending';
+
+  const icon = status === 'completed' ? <CheckCircle2 className="h-4 w-4 text-primary" /> :
+    status === 'in_progress' ? <Clock className="h-4 w-4 text-warning" /> :
+    <Circle className="h-4 w-4 text-muted-foreground" />;
+
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <span className={cn(
+        'text-xs px-2 py-0.5 rounded-full',
+        status === 'completed' && 'bg-primary/10 text-primary',
+        status === 'in_progress' && 'bg-warning/10 text-warning',
+        status === 'pending' && 'bg-muted text-muted-foreground'
+      )}>
+        {status === 'completed' ? 'Concluída' : status === 'in_progress' ? 'Em Andamento' : 'Pendente'}
+        {total > 0 && ` (${completed}/${total})`}
+      </span>
+    </div>
+  );
+}
 
 export default function AdminProjectStages() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -41,28 +64,31 @@ export default function AdminProjectStages() {
   const updateStage = useUpdateProjectStage();
   const createDefaults = useCreateDefaultStages();
   const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
+  const [editingDates, setEditingDates] = useState<Record<string, { started_at?: string; completed_at?: string }>>({});
 
-  const handleStatusChange = (stage: ProjectStage, newStatus: string) => {
-    const updates: Partial<ProjectStage> = { status: newStatus as ProjectStage['status'] };
-    
-    if (newStatus === 'in_progress' && !stage.started_at) {
-      updates.started_at = new Date().toISOString();
+  const handleSaveDates = (stage: ProjectStage) => {
+    const dates = editingDates[stage.id];
+    if (!dates) return;
+
+    const updates: Partial<ProjectStage> = {};
+    if (dates.started_at !== undefined) {
+      updates.started_at = dates.started_at ? new Date(dates.started_at).toISOString() : null;
     }
-    if (newStatus === 'completed') {
-      updates.completed_at = new Date().toISOString();
-      if (!stage.started_at) {
-        updates.started_at = new Date().toISOString();
-      }
-    }
-    if (newStatus === 'pending') {
-      updates.started_at = null;
-      updates.completed_at = null;
+    if (dates.completed_at !== undefined) {
+      updates.completed_at = dates.completed_at ? new Date(dates.completed_at).toISOString() : null;
     }
 
     updateStage.mutate(
       { id: stage.id, updates },
       {
-        onSuccess: () => toast.success(`Etapa "${stage.stage_name}" atualizada!`),
+        onSuccess: () => {
+          toast.success('Datas atualizadas!');
+          setEditingDates(prev => {
+            const next = { ...prev };
+            delete next[stage.id];
+            return next;
+          });
+        },
         onError: (err: Error) => toast.error('Erro: ' + err.message),
       }
     );
@@ -96,11 +122,23 @@ export default function AdminProjectStages() {
     });
   };
 
-  const statusIcon = (status: string) => {
-    if (status === 'completed') return <CheckCircle2 className="h-4 w-4 text-primary" />;
-    if (status === 'in_progress') return <Clock className="h-4 w-4 text-warning" />;
-    return <Circle className="h-4 w-4 text-muted-foreground" />;
+  const getDateValue = (stage: ProjectStage, field: 'started_at' | 'completed_at') => {
+    const edited = editingDates[stage.id]?.[field];
+    if (edited !== undefined) return edited;
+    if (!stage[field]) return '';
+    return new Date(stage[field]!).toISOString().split('T')[0];
   };
+
+  const setDateField = (stageId: string, field: 'started_at' | 'completed_at', value: string) => {
+    setEditingDates(prev => ({
+      ...prev,
+      [stageId]: { ...prev[stageId], [field]: value },
+    }));
+  };
+
+  // Separate main and complementary
+  const mainStages = stages?.filter(s => s.order_index < 5) || [];
+  const complementaryStages = stages?.filter(s => s.order_index >= 5) || [];
 
   return (
     <AppLayout>
@@ -132,7 +170,7 @@ export default function AdminProjectStages() {
                   Gerenciar Etapas
                 </CardTitle>
                 <CardDescription>
-                  Atualize o status e observações de cada etapa do projeto. Inclui Evolução e Suporte pós-produção.
+                  Configure datas de início/término para o Gantt. O status é calculado automaticamente pelo checklist.
                 </CardDescription>
               </div>
               {stages && stages.length === 0 && (
@@ -150,68 +188,40 @@ export default function AdminProjectStages() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : stages && stages.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">#</TableHead>
-                    <TableHead>Etapa</TableHead>
-                    <TableHead className="w-[180px]">Status</TableHead>
-                    <TableHead>Observações</TableHead>
-                    <TableHead className="w-[60px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stages.map((stage) => (
-                    <TableRow key={stage.id}>
-                      <TableCell className="text-muted-foreground">
-                        {stage.order_index + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {statusIcon(stage.status)}
-                          <span className="font-medium">{stage.stage_name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={stage.status}
-                          onValueChange={(val) => handleStatusChange(stage, val)}
-                        >
-                          <SelectTrigger className="w-[160px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pendente</SelectItem>
-                            <SelectItem value="in_progress">Em Andamento</SelectItem>
-                            <SelectItem value="completed">Concluída</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Textarea
-                          className="min-h-[36px] h-9 resize-none text-sm"
-                          placeholder="Adicionar observação..."
-                          value={editingNotes[stage.id] ?? stage.notes ?? ''}
-                          onChange={(e) => setEditingNotes(prev => ({ ...prev, [stage.id]: e.target.value }))}
-                          rows={1}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {editingNotes[stage.id] !== undefined && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleSaveNotes(stage)}
-                            disabled={updateStage.isPending}
-                          >
-                            <Save className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="space-y-6">
+                {mainStages.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Etapas do Projeto (1-5)</h3>
+                    <StagesTable 
+                      stages={mainStages}
+                      editingNotes={editingNotes}
+                      setEditingNotes={setEditingNotes}
+                      editingDates={editingDates}
+                      getDateValue={getDateValue}
+                      setDateField={setDateField}
+                      handleSaveNotes={handleSaveNotes}
+                      handleSaveDates={handleSaveDates}
+                      updatePending={updateStage.isPending}
+                    />
+                  </div>
+                )}
+                {complementaryStages.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pós-Produção (6-7)</h3>
+                    <StagesTable 
+                      stages={complementaryStages}
+                      editingNotes={editingNotes}
+                      setEditingNotes={setEditingNotes}
+                      editingDates={editingDates}
+                      getDateValue={getDateValue}
+                      setDateField={setDateField}
+                      handleSaveNotes={handleSaveNotes}
+                      handleSaveDates={handleSaveDates}
+                      updatePending={updateStage.isPending}
+                    />
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
                 <BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -225,5 +235,78 @@ export default function AdminProjectStages() {
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+function StagesTable({ stages, editingNotes, setEditingNotes, editingDates, getDateValue, setDateField, handleSaveNotes, handleSaveDates, updatePending }: any) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[50px]">#</TableHead>
+          <TableHead>Etapa</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="w-[140px]">Início</TableHead>
+          <TableHead className="w-[140px]">Término</TableHead>
+          <TableHead>Observações</TableHead>
+          <TableHead className="w-[60px]"></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {stages.map((stage: any) => (
+          <TableRow key={stage.id}>
+            <TableCell className="text-muted-foreground">
+              {stage.order_index + 1}
+            </TableCell>
+            <TableCell>
+              <span className="font-medium">{stage.stage_name}</span>
+            </TableCell>
+            <TableCell>
+              <StageStatusCell stageId={stage.id} />
+            </TableCell>
+            <TableCell>
+              <Input
+                type="date"
+                className="h-8 text-sm"
+                value={getDateValue(stage, 'started_at')}
+                onChange={(e) => setDateField(stage.id, 'started_at', e.target.value)}
+              />
+            </TableCell>
+            <TableCell>
+              <Input
+                type="date"
+                className="h-8 text-sm"
+                value={getDateValue(stage, 'completed_at')}
+                onChange={(e) => setDateField(stage.id, 'completed_at', e.target.value)}
+              />
+            </TableCell>
+            <TableCell>
+              <Textarea
+                className="min-h-[36px] h-9 resize-none text-sm"
+                placeholder="Observação..."
+                value={editingNotes[stage.id] ?? stage.notes ?? ''}
+                onChange={(e: any) => setEditingNotes((prev: any) => ({ ...prev, [stage.id]: e.target.value }))}
+                rows={1}
+              />
+            </TableCell>
+            <TableCell>
+              {(editingNotes[stage.id] !== undefined || editingDates[stage.id] !== undefined) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (editingNotes[stage.id] !== undefined) handleSaveNotes(stage);
+                    if (editingDates[stage.id] !== undefined) handleSaveDates(stage);
+                  }}
+                  disabled={updatePending}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              )}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
