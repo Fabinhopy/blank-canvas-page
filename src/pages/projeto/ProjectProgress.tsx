@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
 import { useProjectStages } from '@/hooks/useProjectStages';
+import { useProjectStageItems } from '@/hooks/useProjectStageItems';
+import { useAllStageItems } from '@/hooks/useAllStageItems';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StageChecklist } from '@/components/projeto/StageChecklist';
@@ -15,6 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useQueryClient } from '@tanstack/react-query';
 
 const stageIcons: Record<string, React.ElementType> = {
   'Levantamento': ClipboardList,
@@ -22,8 +25,8 @@ const stageIcons: Record<string, React.ElementType> = {
   'Desenvolvimento': Code,
   'Homologação': TestTube,
   'Produção': Rocket,
-  'Evolução': TrendingUp,
   'Suporte': Wrench,
+  'Evolução': TrendingUp,
 };
 
 type ViewMode = 'table' | 'gantt';
@@ -32,13 +35,15 @@ export default function ProjectProgress() {
   const { id } = useParams<{ id: string }>();
   const { data: project } = useProject(id);
   const { data: stages, isLoading } = useProjectStages(id);
+  const { data: allItems } = useAllStageItems(id);
   const { isAdmin } = useAuth();
   const [expandedStage, setExpandedStage] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
 
-  const completedCount = stages?.filter(s => s.status === 'completed').length || 0;
-  const totalCount = stages?.length || 1;
-  const progressPercent = Math.round((completedCount / totalCount) * 100);
+  const progressPercent = allItems && allItems.totalItems > 0 
+    ? Math.round((allItems.completedItems / allItems.totalItems) * 100) 
+    : 0;
+  
   const currentStage = stages?.find(s => s.status === 'in_progress');
 
   return (
@@ -92,12 +97,15 @@ export default function ProjectProgress() {
               />
             </div>
             <div className="flex items-center gap-4 mt-2">
+              <p className="text-sm text-muted-foreground">
+                {allItems?.completedItems || 0}/{allItems?.totalItems || 0} itens concluídos
+              </p>
               {currentStage && (
                 <p className="text-sm text-muted-foreground">
                   Etapa atual: <span className="font-medium text-foreground">{currentStage.stage_name}</span>
                 </p>
               )}
-              {progressPercent === 100 && (
+              {progressPercent === 100 && (allItems?.totalItems || 0) > 0 && (
                 <p className="text-sm font-medium text-primary">✅ Projeto Concluído</p>
               )}
             </div>
@@ -137,6 +145,26 @@ export default function ProjectProgress() {
   );
 }
 
+function StageStatusBadge({ stageId }: { stageId: string }) {
+  const { data: items } = useProjectStageItems(stageId);
+  const total = items?.length || 0;
+  const completed = items?.filter(i => i.is_completed).length || 0;
+  
+  const status = total === 0 ? 'pending' : completed === total ? 'completed' : completed > 0 ? 'in_progress' : 'pending';
+  
+  return (
+    <span className={cn(
+      'text-xs px-2 py-0.5 rounded-full',
+      status === 'completed' && 'bg-primary/10 text-primary',
+      status === 'in_progress' && 'bg-warning/10 text-warning',
+      status === 'pending' && 'bg-muted text-muted-foreground'
+    )}>
+      {status === 'completed' ? 'Concluída' : status === 'in_progress' ? 'Em Andamento' : 'Pendente'}
+      {total > 0 && ` (${completed}/${total})`}
+    </span>
+  );
+}
+
 function TableView({ stages, expandedStage, setExpandedStage, projectId, isAdmin }: {
   stages: any[];
   expandedStage: string | null;
@@ -144,83 +172,80 @@ function TableView({ stages, expandedStage, setExpandedStage, projectId, isAdmin
   projectId: string;
   isAdmin: boolean;
 }) {
-  return (
-    <div className="space-y-3">
-      {stages.map((stage) => {
-        const Icon = stageIcons[stage.stage_name] || Circle;
-        const isCompleted = stage.status === 'completed';
-        const isInProgress = stage.status === 'in_progress';
-        const isExpanded = expandedStage === stage.id;
+  // Separate main stages (1-5) and complementary (6-7)
+  const mainStages = stages.filter(s => s.order_index < 5);
+  const complementaryStages = stages.filter(s => s.order_index >= 5);
 
-        return (
-          <Card 
-            key={stage.id} 
-            className={cn(
-              'transition-all cursor-pointer',
-              isInProgress && 'border-primary/50 shadow-md',
-              isCompleted && 'border-primary/30'
-            )}
-          >
-            <CardHeader 
-              className="pb-2 cursor-pointer"
-              onClick={() => setExpandedStage(isExpanded ? null : stage.id)}
-            >
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  'flex h-10 w-10 items-center justify-center rounded-full border-2 shrink-0',
-                  isCompleted && 'border-primary bg-primary text-primary-foreground',
-                  isInProgress && 'border-primary bg-accent text-primary',
-                  !isCompleted && !isInProgress && 'border-muted-foreground/30 bg-muted text-muted-foreground'
-                )}>
-                  {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className={cn(
-                      'text-base',
-                      isInProgress && 'text-primary',
-                      !isCompleted && !isInProgress && 'text-muted-foreground'
-                    )}>
-                      {stage.stage_name}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        'text-xs px-2 py-0.5 rounded-full',
-                        isCompleted && 'bg-primary/10 text-primary',
-                        isInProgress && 'bg-warning/10 text-warning',
-                        !isCompleted && !isInProgress && 'bg-muted text-muted-foreground'
-                      )}>
-                        {isCompleted ? 'Concluída' : isInProgress ? 'Em Andamento' : 'Pendente'}
-                      </span>
-                      {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                  </div>
-                  {stage.notes && (
-                    <CardDescription className="mt-0.5">{stage.notes}</CardDescription>
-                  )}
-                  <div className="flex gap-3 mt-1">
-                    {stage.started_at && (
-                      <span className="text-xs text-muted-foreground">
-                        Início: {format(new Date(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
-                      </span>
-                    )}
-                    {stage.completed_at && (
-                      <span className="text-xs text-muted-foreground">
-                        Concluído: {format(new Date(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
-                      </span>
-                    )}
-                  </div>
+  const renderStage = (stage: any) => {
+    const Icon = stageIcons[stage.stage_name] || Circle;
+    const isExpanded = expandedStage === stage.id;
+
+    return (
+      <Card 
+        key={stage.id} 
+        className="transition-all cursor-pointer"
+      >
+        <CardHeader 
+          className="pb-2 cursor-pointer"
+          onClick={() => setExpandedStage(isExpanded ? null : stage.id)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 shrink-0 border-muted-foreground/30 bg-muted text-muted-foreground">
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">
+                  {stage.order_index + 1}. {stage.stage_name}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <StageStatusBadge stageId={stage.id} />
+                  {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                 </div>
               </div>
-            </CardHeader>
-            {isExpanded && (
-              <CardContent className="pt-0">
-                <StageChecklist stageId={stage.id} projectId={projectId} isAdmin={isAdmin} />
-              </CardContent>
-            )}
-          </Card>
-        );
-      })}
+              {stage.notes && (
+                <CardDescription className="mt-0.5">{stage.notes}</CardDescription>
+              )}
+              <div className="flex gap-3 mt-1">
+                {stage.started_at && (
+                  <span className="text-xs text-muted-foreground">
+                    Início: {format(new Date(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
+                  </span>
+                )}
+                {stage.completed_at && (
+                  <span className="text-xs text-muted-foreground">
+                    Término: {format(new Date(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        {isExpanded && (
+          <CardContent className="pt-0">
+            <StageChecklist stageId={stage.id} projectId={projectId} isAdmin={isAdmin} />
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Etapas do Projeto (1-5)</h3>
+        <div className="space-y-3">
+          {mainStages.map(renderStage)}
+        </div>
+      </div>
+      {complementaryStages.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pós-Produção</h3>
+          <div className="space-y-3">
+            {complementaryStages.map(renderStage)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -240,7 +265,7 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
           <BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <h3 className="text-lg font-medium">Sem dados para o Gantt</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            As etapas precisam ter datas de início para visualizar o gráfico de Gantt.
+            As etapas precisam ter datas de início e término para visualizar o gráfico de Gantt.
           </p>
         </CardContent>
       </Card>
@@ -267,8 +292,7 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
         <div className="space-y-3">
           {stages.map((stage) => {
             const Icon = stageIcons[stage.stage_name] || Circle;
-            const isCompleted = stage.status === 'completed';
-            const isInProgress = stage.status === 'in_progress';
+            const isComplementary = stage.order_index >= 5;
 
             let leftPercent = 0;
             let widthPercent = 0;
@@ -282,26 +306,14 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
 
             return (
               <div key={stage.id} className="flex items-center gap-3">
-                <div className="w-36 shrink-0 flex items-center gap-2">
-                  <Icon className={cn(
-                    'h-4 w-4 shrink-0',
-                    isCompleted ? 'text-primary' : isInProgress ? 'text-warning' : 'text-muted-foreground'
-                  )} />
-                  <span className="text-sm truncate">{stage.stage_name}</span>
+                <div className="w-40 shrink-0 flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-4">{stage.order_index + 1}</span>
+                  <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className={cn("text-sm truncate", isComplementary && "italic")}>{stage.stage_name}</span>
                 </div>
                 <div className="flex-1 h-8 bg-muted rounded-md relative overflow-hidden">
                   {stage.started_at && (
-                    <div
-                      className={cn(
-                        'absolute top-1 bottom-1 rounded transition-all',
-                        isCompleted ? 'bg-primary' : isInProgress ? 'bg-warning' : 'bg-muted-foreground/30'
-                      )}
-                      style={{
-                        left: `${leftPercent}%`,
-                        width: `${widthPercent}%`,
-                        minWidth: '8px',
-                      }}
-                    />
+                    <GanttBar stageId={stage.id} leftPercent={leftPercent} widthPercent={widthPercent} isComplementary={isComplementary} />
                   )}
                 </div>
               </div>
@@ -324,5 +336,27 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function GanttBar({ stageId, leftPercent, widthPercent, isComplementary }: { stageId: string; leftPercent: number; widthPercent: number; isComplementary: boolean }) {
+  const { data: items } = useProjectStageItems(stageId);
+  const total = items?.length || 0;
+  const completed = items?.filter(i => i.is_completed).length || 0;
+  const status = total === 0 ? 'pending' : completed === total ? 'completed' : completed > 0 ? 'in_progress' : 'pending';
+
+  return (
+    <div
+      className={cn(
+        'absolute top-1 bottom-1 rounded transition-all',
+        status === 'completed' ? 'bg-primary' : status === 'in_progress' ? 'bg-warning' : 'bg-muted-foreground/30',
+        isComplementary && 'opacity-70'
+      )}
+      style={{
+        left: `${leftPercent}%`,
+        width: `${widthPercent}%`,
+        minWidth: '8px',
+      }}
+    />
   );
 }

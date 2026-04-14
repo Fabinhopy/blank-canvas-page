@@ -4,6 +4,7 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useVideos } from '@/hooks/useVideos';
 import { useProjectStages } from '@/hooks/useProjectStages';
 import { useProjectMilestones } from '@/hooks/useProjectMilestones';
+import { useAllStageItems } from '@/hooks/useAllStageItems';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +32,7 @@ export default function ProjectOverview() {
   const { data: videos } = useVideos(id);
   const { data: stages } = useProjectStages(id);
   const { data: milestones } = useProjectMilestones(id);
+  const { data: allItems } = useAllStageItems(id);
 
   if (projectLoading) {
     return (
@@ -56,9 +58,10 @@ export default function ProjectOverview() {
     );
   }
 
-  const completedStages = stages?.filter(s => s.status === 'completed').length || 0;
-  const totalStages = stages?.length || 1;
-  const progressPercent = Math.round((completedStages / totalStages) * 100);
+  const progressPercent = allItems && allItems.totalItems > 0 
+    ? Math.round((allItems.completedItems / allItems.totalItems) * 100) 
+    : 0;
+
   const currentStage = stages?.find(s => s.status === 'in_progress');
   
   const upcomingMilestones = milestones
@@ -110,13 +113,9 @@ export default function ProjectOverview() {
                 <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted mb-2">
                   <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                 </div>
-                {currentStage ? (
-                  <p className="text-sm text-muted-foreground">
-                    Etapa atual: <span className="font-medium text-foreground">{currentStage.stage_name}</span>
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{completedStages}/{totalStages} etapas concluídas</p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {allItems?.completedItems || 0}/{allItems?.totalItems || 0} itens concluídos
+                </p>
                 <div className="flex items-center text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   Ver detalhes <ArrowRight className="ml-1 h-4 w-4" />
                 </div>
