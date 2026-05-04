@@ -9,12 +9,17 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardLinksSection } from '@/components/projeto/DashboardLinksSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   FileText, Video, ArrowRight, Loader2, Calendar,
-  BarChart3, CalendarDays, CheckCircle2, Clock, GraduationCap
+  BarChart3, CalendarDays, CheckCircle2, Clock, GraduationCap,
+  Download, Flag, PlayCircle, Target,
 } from 'lucide-react';
-import { format, isSameDay, isPast } from 'date-fns';
+import { format, isSameDay, isPast, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { exportProjectVersioning } from '@/lib/exportProjectVersioning';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 function computeStatus(dueDate: string): string {
   const date = new Date(dueDate + 'T00:00:00');
