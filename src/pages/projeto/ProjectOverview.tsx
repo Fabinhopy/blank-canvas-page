@@ -38,6 +38,20 @@ export default function ProjectOverview() {
   const { data: stages } = useProjectStages(id);
   const { data: milestones } = useProjectMilestones(id);
   const { data: allItems } = useAllStageItems(id);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!id) return;
+    try {
+      setExporting(true);
+      await exportProjectVersioning(id);
+      toast.success('Versionamento exportado!');
+    } catch (e: any) {
+      toast.error('Erro ao exportar: ' + e.message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (projectLoading) {
     return (
