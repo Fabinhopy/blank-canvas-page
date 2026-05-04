@@ -222,7 +222,10 @@ export default function Chat() {
                               ? 'bg-primary text-primary-foreground rounded-br-md' 
                               : 'bg-muted rounded-bl-md'
                           }`}>
-                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                            {msg.attachment_url && <ChatAttachment msg={msg} isMe={isMe} onDownload={handleAttachmentDownload} />}
+                            {msg.content && !msg.content.startsWith('📎 ') && (
+                              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                            )}
                             <p className={`text-[10px] mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                               {format(new Date(msg.created_at), 'HH:mm', { locale: ptBR })}
                             </p>
@@ -236,16 +239,42 @@ export default function Chat() {
               </ScrollArea>
 
               {/* Input */}
-              <div className="p-4 border-t">
+              <div className="p-4 border-t space-y-2">
+                {pendingFile && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted text-sm">
+                    <Paperclip className="h-4 w-4 shrink-0" />
+                    <span className="flex-1 truncate">{pendingFile.name}</span>
+                    <span className="text-xs text-muted-foreground">{(pendingFile.size / 1024).toFixed(0)} KB</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setPendingFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,video/*"
+                    className="hidden"
+                    onChange={e => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        if (f.size > 25 * 1024 * 1024) { toast.error('Arquivo muito grande (máx 25MB)'); return; }
+                        setPendingFile(f);
+                      }
+                    }}
+                  />
+                  <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} title="Anexar arquivo">
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
                   <Input
                     value={messageText}
                     onChange={e => setMessageText(e.target.value)}
                     placeholder="Digite sua mensagem..."
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   />
-                  <Button onClick={handleSend} disabled={!messageText.trim() || sendMessage.isPending}>
-                    {sendMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  <Button onClick={handleSend} disabled={(!messageText.trim() && !pendingFile) || sendMessage.isPending || uploading}>
+                    {(sendMessage.isPending || uploading) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
