@@ -318,3 +318,42 @@ export default function Chat() {
     </AppLayout>
   );
 }
+
+function ChatAttachment({ msg, isMe, onDownload }: { msg: any; isMe: boolean; onDownload: (path: string, name: string) => void }) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const isImage = msg.attachment_type?.startsWith('image/');
+  const isVideo = msg.attachment_type?.startsWith('video/');
+
+  useEffect(() => {
+    if (isImage || isVideo) {
+      supabase.storage.from('chat-attachments').createSignedUrl(msg.attachment_url, 3600)
+        .then(r => setSignedUrl(r.data?.signedUrl || null));
+    }
+  }, [msg.attachment_url, isImage, isVideo]);
+
+  if (isImage && signedUrl) {
+    return (
+      <button onClick={() => onDownload(msg.attachment_url, msg.attachment_name)} className="block mb-2">
+        <img src={signedUrl} alt={msg.attachment_name} className="rounded-lg max-w-full max-h-64 object-cover" />
+      </button>
+    );
+  }
+  if (isVideo && signedUrl) {
+    return <video src={signedUrl} controls className="rounded-lg max-w-full max-h-64 mb-2" />;
+  }
+  const Icon = msg.attachment_type?.startsWith('image/') ? ImageIcon : msg.attachment_type?.startsWith('video/') ? VideoIcon : FileText;
+  return (
+    <button
+      onClick={() => onDownload(msg.attachment_url, msg.attachment_name)}
+      className={`flex items-center gap-2 p-2 rounded-lg mb-1 w-full text-left ${isMe ? 'bg-primary-foreground/10 hover:bg-primary-foreground/20' : 'bg-background hover:bg-background/80'}`}
+    >
+      <Icon className="h-5 w-5 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium truncate">{msg.attachment_name}</p>
+        <p className="text-[10px] opacity-70">{((msg.attachment_size || 0) / 1024).toFixed(0)} KB</p>
+      </div>
+      <Download className="h-4 w-4 shrink-0 opacity-70" />
+    </button>
+  );
+}
+
