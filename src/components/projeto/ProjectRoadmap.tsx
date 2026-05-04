@@ -44,16 +44,28 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
     return milestones.filter(m => isSameDay(new Date(m.due_date + 'T00:00:00'), day));
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   // Upcoming milestones (next items regardless of month)
   const upcoming = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     return milestones
       .filter(m => {
         const d = new Date(m.due_date + 'T00:00:00');
         return d >= today && m.status !== 'cancelled' && m.status !== 'completed';
       })
-      .slice(0, 5);
+      .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+      .slice(0, 8);
+  }, [milestones]);
+
+  const completed = useMemo(() => {
+    return milestones
+      .filter(m => {
+        const d = new Date(m.due_date + 'T00:00:00');
+        return m.status === 'completed' || (d < today && m.status !== 'cancelled');
+      })
+      .sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime())
+      .slice(0, 8);
   }, [milestones]);
 
   if (isLoading) {
