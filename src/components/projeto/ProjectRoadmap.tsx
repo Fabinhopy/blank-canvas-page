@@ -44,16 +44,28 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
     return milestones.filter(m => isSameDay(new Date(m.due_date + 'T00:00:00'), day));
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   // Upcoming milestones (next items regardless of month)
   const upcoming = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     return milestones
       .filter(m => {
         const d = new Date(m.due_date + 'T00:00:00');
         return d >= today && m.status !== 'cancelled' && m.status !== 'completed';
       })
-      .slice(0, 5);
+      .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+      .slice(0, 8);
+  }, [milestones]);
+
+  const completed = useMemo(() => {
+    return milestones
+      .filter(m => {
+        const d = new Date(m.due_date + 'T00:00:00');
+        return m.status === 'completed' || (d < today && m.status !== 'cancelled');
+      })
+      .sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime())
+      .slice(0, 8);
   }, [milestones]);
 
   if (isLoading) {
@@ -150,35 +162,72 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
         </CardContent>
       </Card>
 
-      {/* Upcoming list */}
-      {upcoming.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Próximas Entregas</CardTitle>
-            <CardDescription>Itens pendentes mais próximos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {upcoming.map(m => {
-                const cfg = typeConfig[m.milestone_type as keyof typeof typeConfig] || typeConfig.entrega;
-                const Icon = cfg.icon;
-                return (
-                  <div key={m.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                    <Icon className="h-5 w-5 text-primary shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{m.title}</p>
-                      {m.description && <p className="text-xs text-muted-foreground truncate">{m.description}</p>}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-medium">{format(new Date(m.due_date), 'dd/MM/yyyy')}</p>
-                      <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Upcoming + Completed */}
+      {(upcoming.length > 0 || completed.length > 0) && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Próximas Entregas</CardTitle>
+              <CardDescription>{upcoming.length} pendente(s)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {upcoming.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum item pendente</p>
+              ) : (
+                <div className="space-y-3">
+                  {upcoming.map(m => {
+                    const cfg = typeConfig[m.milestone_type as keyof typeof typeConfig] || typeConfig.entrega;
+                    const Icon = cfg.icon;
+                    return (
+                      <div key={m.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                        <Icon className="h-5 w-5 text-primary shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate text-sm">{m.title}</p>
+                          {m.description && <p className="text-xs text-muted-foreground truncate">{m.description}</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs font-medium">{format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                          <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Entregas Concluídas</CardTitle>
+              <CardDescription>Últimos itens finalizados</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {completed.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nada concluído ainda</p>
+              ) : (
+                <div className="space-y-3">
+                  {completed.map(m => {
+                    const cfg = typeConfig[m.milestone_type as keyof typeof typeConfig] || typeConfig.entrega;
+                    const Icon = cfg.icon;
+                    return (
+                      <div key={m.id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <Icon className="h-5 w-5 text-success shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate text-sm line-through opacity-70">{m.title}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs font-medium text-muted-foreground">{format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                          <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {milestones.length === 0 && !isLoading && (

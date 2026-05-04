@@ -45,8 +45,10 @@ import {
   BarChart3,
   Link2,
   CalendarDays,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportProjectVersioning } from '@/lib/exportProjectVersioning';
 
 interface Project {
   id: string;
@@ -387,6 +389,12 @@ export default function AdminClientProjects() {
                             <Link to={`/admin/projetos/${project.id}/agenda`}>
                               <CalendarDays className="h-4 w-4" />
                             </Link>
+                          </Button>
+                          <Button variant="ghost" size="icon" title="Exportar versionamento" onClick={async () => {
+                            try { await exportProjectVersioning(project.id); toast.success('Versionamento exportado!'); }
+                            catch (e: any) { toast.error('Erro: ' + e.message); }
+                          }}>
+                            <Download className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
                             <Pencil className="h-4 w-4" />

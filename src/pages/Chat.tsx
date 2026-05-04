@@ -16,7 +16,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { MessageCircle, Send, Loader2, Plus, Users } from 'lucide-react';
+import { MessageCircle, Send, Loader2, Plus, Users, Paperclip, FileText, Image as ImageIcon, Video as VideoIcon, X, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -32,21 +32,62 @@ export default function Chat() {
   const [messageText, setMessageText] = useState('');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newProjectId, setNewProjectId] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!messageText.trim() || !selectedConversationId || !user) return;
+  const handleSend = async () => {
+    if ((!messageText.trim() && !pendingFile) || !selectedConversationId || !user) return;
+    let attachment = null;
+    if (pendingFile) {
+      try {
+        setUploading(true);
+        const ext = pendingFile.name.split('.').pop() || 'bin';
+        const path = `${user.id}/${selectedConversationId}/${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from('chat-attachments').upload(path, pendingFile);
+        if (upErr) throw upErr;
+        attachment = {
+          url: path,
+          name: pendingFile.name,
+          type: pendingFile.type || 'application/octet-stream',
+          size: pendingFile.size,
+        };
+      } catch (e: any) {
+        toast.error('Erro ao enviar arquivo: ' + e.message);
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
     sendMessage.mutate({
       conversationId: selectedConversationId,
-      content: messageText.trim(),
+      content: messageText.trim() || (pendingFile ? `📎 ${pendingFile.name}` : ''),
       senderId: user.id,
+      attachment,
     });
     setMessageText('');
+    setPendingFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  const handleAttachmentDownload = async (path: string, name: string) => {
+    const { data, error } = await supabase.storage.from('chat-attachments').createSignedUrl(path, 60);
+    if (error || !data) { toast.error('Erro ao baixar'); return; }
+    const res = await fetch(data.signedUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getSignedUrl = (path: string) => 
+    supabase.storage.from('chat-attachments').createSignedUrl(path, 3600).then(r => r.data?.signedUrl || '');
 
   const handleCreateConversation = async () => {
     if (!user) return;
@@ -181,7 +222,10 @@ export default function Chat() {
                               ? 'bg-primary text-primary-foreground rounded-br-md' 
                               : 'bg-muted rounded-bl-md'
                           }`}>
-                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                            {msg.attachment_url && <ChatAttachment msg={msg} isMe={isMe} onDownload={handleAttachmentDownload} />}
+                            {msg.content && !msg.content.startsWith('📎 ') && (
+                              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                            )}
                             <p className={`text-[10px] mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                               {format(new Date(msg.created_at), 'HH:mm', { locale: ptBR })}
                             </p>
@@ -195,16 +239,42 @@ export default function Chat() {
               </ScrollArea>
 
               {/* Input */}
-              <div className="p-4 border-t">
+              <div className="p-4 border-t space-y-2">
+                {pendingFile && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted text-sm">
+                    <Paperclip className="h-4 w-4 shrink-0" />
+                    <span className="flex-1 truncate">{pendingFile.name}</span>
+                    <span className="text-xs text-muted-foreground">{(pendingFile.size / 1024).toFixed(0)} KB</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setPendingFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,video/*"
+                    className="hidden"
+                    onChange={e => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        if (f.size > 25 * 1024 * 1024) { toast.error('Arquivo muito grande (máx 25MB)'); return; }
+                        setPendingFile(f);
+                      }
+                    }}
+                  />
+                  <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} title="Anexar arquivo">
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
                   <Input
                     value={messageText}
                     onChange={e => setMessageText(e.target.value)}
                     placeholder="Digite sua mensagem..."
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   />
-                  <Button onClick={handleSend} disabled={!messageText.trim() || sendMessage.isPending}>
-                    {sendMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  <Button onClick={handleSend} disabled={(!messageText.trim() && !pendingFile) || sendMessage.isPending || uploading}>
+                    {(sendMessage.isPending || uploading) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -248,3 +318,42 @@ export default function Chat() {
     </AppLayout>
   );
 }
+
+function ChatAttachment({ msg, isMe, onDownload }: { msg: any; isMe: boolean; onDownload: (path: string, name: string) => void }) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const isImage = msg.attachment_type?.startsWith('image/');
+  const isVideo = msg.attachment_type?.startsWith('video/');
+
+  useEffect(() => {
+    if (isImage || isVideo) {
+      supabase.storage.from('chat-attachments').createSignedUrl(msg.attachment_url, 3600)
+        .then(r => setSignedUrl(r.data?.signedUrl || null));
+    }
+  }, [msg.attachment_url, isImage, isVideo]);
+
+  if (isImage && signedUrl) {
+    return (
+      <button onClick={() => onDownload(msg.attachment_url, msg.attachment_name)} className="block mb-2">
+        <img src={signedUrl} alt={msg.attachment_name} className="rounded-lg max-w-full max-h-64 object-cover" />
+      </button>
+    );
+  }
+  if (isVideo && signedUrl) {
+    return <video src={signedUrl} controls className="rounded-lg max-w-full max-h-64 mb-2" />;
+  }
+  const Icon = msg.attachment_type?.startsWith('image/') ? ImageIcon : msg.attachment_type?.startsWith('video/') ? VideoIcon : FileText;
+  return (
+    <button
+      onClick={() => onDownload(msg.attachment_url, msg.attachment_name)}
+      className={`flex items-center gap-2 p-2 rounded-lg mb-1 w-full text-left ${isMe ? 'bg-primary-foreground/10 hover:bg-primary-foreground/20' : 'bg-background hover:bg-background/80'}`}
+    >
+      <Icon className="h-5 w-5 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium truncate">{msg.attachment_name}</p>
+        <p className="text-[10px] opacity-70">{((msg.attachment_size || 0) / 1024).toFixed(0)} KB</p>
+      </div>
+      <Download className="h-4 w-4 shrink-0 opacity-70" />
+    </button>
+  );
+}
+

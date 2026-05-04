@@ -23,6 +23,10 @@ export interface ChatMessage {
   content: string;
   is_read: boolean;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: string | null;
+  attachment_size?: number | null;
   // joined
   sender_profile?: { full_name: string; avatar_url: string | null } | null;
 }
@@ -139,13 +143,32 @@ export function useMessages(conversationId: string | null) {
   });
 }
 
+export interface SendMessageInput {
+  conversationId: string;
+  content: string;
+  senderId: string;
+  attachment?: {
+    url: string;
+    name: string;
+    type: string;
+    size: number;
+  } | null;
+}
+
 export function useSendMessage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ conversationId, content, senderId }: { conversationId: string; content: string; senderId: string }) => {
+    mutationFn: async ({ conversationId, content, senderId, attachment }: SendMessageInput) => {
+      const payload: any = { conversation_id: conversationId, sender_id: senderId, content };
+      if (attachment) {
+        payload.attachment_url = attachment.url;
+        payload.attachment_name = attachment.name;
+        payload.attachment_type = attachment.type;
+        payload.attachment_size = attachment.size;
+      }
       const { error } = await (supabase as any)
         .from('chat_messages')
-        .insert({ conversation_id: conversationId, sender_id: senderId, content });
+        .insert(payload);
       if (error) throw error;
 
       // Update conversation updated_at
