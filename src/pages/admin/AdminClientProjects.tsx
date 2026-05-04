@@ -45,8 +45,10 @@ import {
   BarChart3,
   Link2,
   CalendarDays,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportProjectVersioning } from '@/lib/exportProjectVersioning';
 
 interface Project {
   id: string;
