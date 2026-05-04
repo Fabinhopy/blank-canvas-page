@@ -16,7 +16,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { MessageCircle, Send, Loader2, Plus, Users } from 'lucide-react';
+import { MessageCircle, Send, Loader2, Plus, Users, Paperclip, FileText, Image as ImageIcon, Video as VideoIcon, X, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -32,21 +32,62 @@ export default function Chat() {
   const [messageText, setMessageText] = useState('');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newProjectId, setNewProjectId] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!messageText.trim() || !selectedConversationId || !user) return;
+  const handleSend = async () => {
+    if ((!messageText.trim() && !pendingFile) || !selectedConversationId || !user) return;
+    let attachment = null;
+    if (pendingFile) {
+      try {
+        setUploading(true);
+        const ext = pendingFile.name.split('.').pop() || 'bin';
+        const path = `${user.id}/${selectedConversationId}/${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from('chat-attachments').upload(path, pendingFile);
+        if (upErr) throw upErr;
+        attachment = {
+          url: path,
+          name: pendingFile.name,
+          type: pendingFile.type || 'application/octet-stream',
+          size: pendingFile.size,
+        };
+      } catch (e: any) {
+        toast.error('Erro ao enviar arquivo: ' + e.message);
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
     sendMessage.mutate({
       conversationId: selectedConversationId,
-      content: messageText.trim(),
+      content: messageText.trim() || (pendingFile ? `📎 ${pendingFile.name}` : ''),
       senderId: user.id,
+      attachment,
     });
     setMessageText('');
+    setPendingFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  const handleAttachmentDownload = async (path: string, name: string) => {
+    const { data, error } = await supabase.storage.from('chat-attachments').createSignedUrl(path, 60);
+    if (error || !data) { toast.error('Erro ao baixar'); return; }
+    const res = await fetch(data.signedUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getSignedUrl = (path: string) => 
+    supabase.storage.from('chat-attachments').createSignedUrl(path, 3600).then(r => r.data?.signedUrl || '');
 
   const handleCreateConversation = async () => {
     if (!user) return;
