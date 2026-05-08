@@ -9,6 +9,9 @@ export interface SupportTicket {
   message: string;
   category: string;
   status: string;
+  priority: string;
+  start_date: string | null;
+  end_date: string | null;
   admin_response: string | null;
   responded_at: string | null;
   responded_by: string | null;
@@ -83,10 +86,17 @@ export function useCreateTicket() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ subject, message, category, attachmentUrl, projectId }: { subject: string; message: string; category: string; attachmentUrl?: string | null; projectId?: string | null }) => {
+    mutationFn: async ({ subject, message, category, attachmentUrl, projectId, priority, startDate }: { subject: string; message: string; category: string; attachmentUrl?: string | null; projectId?: string | null; priority?: string; startDate?: string | null }) => {
       const { data, error } = await supabase
         .from('support_tickets' as any)
-        .insert({ user_id: user?.id, subject, message, category, attachment_url: attachmentUrl || null, project_id: projectId || null } as any)
+        .insert({
+          user_id: user?.id,
+          subject, message, category,
+          attachment_url: attachmentUrl || null,
+          project_id: projectId || null,
+          priority: priority || 'medium',
+          start_date: startDate || new Date().toISOString().split('T')[0],
+        } as any)
         .select()
         .single();
       if (error) throw error;
@@ -103,16 +113,21 @@ export function useRespondTicket() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ ticketId, response }: { ticketId: string; response: string }) => {
+    mutationFn: async ({ ticketId, response, endDate, status, priority }: { ticketId: string; response?: string; endDate?: string | null; status?: string; priority?: string }) => {
+      const updates: any = { updated_at: new Date().toISOString() };
+      if (response !== undefined) {
+        updates.admin_response = response;
+        updates.responded_at = new Date().toISOString();
+        updates.responded_by = user?.id;
+        updates.status = status || 'answered';
+      }
+      if (endDate !== undefined) updates.end_date = endDate;
+      if (status !== undefined) updates.status = status;
+      if (priority !== undefined) updates.priority = priority;
+
       const { data, error } = await supabase
         .from('support_tickets' as any)
-        .update({
-          admin_response: response,
-          responded_at: new Date().toISOString(),
-          responded_by: user?.id,
-          status: 'answered',
-          updated_at: new Date().toISOString(),
-        } as any)
+        .update(updates)
         .eq('id', ticketId)
         .select()
         .single();
