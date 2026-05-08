@@ -7,6 +7,7 @@ import { useAllStageItems } from '@/hooks/useAllStageItems';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StageChecklist } from '@/components/projeto/StageChecklist';
+import { EvolutionsSection } from '@/components/projeto/EvolutionsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
