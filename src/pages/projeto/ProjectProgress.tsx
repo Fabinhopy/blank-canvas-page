@@ -141,6 +141,15 @@ export default function ProjectProgress() {
             </CardContent>
           </Card>
         )}
+
+        {/* Evoluções (pós-produção) */}
+        {id && (
+          <EvolutionsSection
+            projectId={id}
+            isAdmin={isAdmin}
+            projectCompleted={progressPercent === 100 && (allItems?.totalItems || 0) > 0}
+          />
+        )}
       </div>
     </AppLayout>
   );
