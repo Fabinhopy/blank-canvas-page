@@ -316,6 +316,12 @@ export default function Support() {
                                     <CheckCircle2 className="h-3 w-3" /> Respondido
                                   </span>
                                 )}
+                                {ticket.start_date && (
+                                  <span className="flex items-center gap-1">
+                                    📅 {format(new Date(ticket.start_date + 'T00:00:00'), 'dd/MM/yy')}
+                                    {ticket.end_date && ` → ${format(new Date(ticket.end_date + 'T00:00:00'), 'dd/MM/yy')}`}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
