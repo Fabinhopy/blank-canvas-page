@@ -270,11 +270,13 @@ export default function Support() {
                   if (open) {
                     setSelectedTicket(ticket);
                     setAdminResponse(ticket.admin_response || '');
+                    setAdminEndDate(ticket.end_date || '');
+                    setAdminPriority(ticket.priority || 'medium');
                     if (ticket.attachment_url) {
                       const { data } = await supabase.storage.from('documents').createSignedUrl(ticket.attachment_url, 3600);
                       setTicketImageUrl(data?.signedUrl || null);
                     } else { setTicketImageUrl(null); }
-                  } else { setSelectedTicket(null); setAdminResponse(''); setTicketImageUrl(null); }
+                  } else { setSelectedTicket(null); setAdminResponse(''); setAdminEndDate(''); setTicketImageUrl(null); }
                 }}>
                   <DialogTrigger asChild>
                     <Card className="cursor-pointer hover:border-primary/30 transition-colors">
@@ -285,9 +287,14 @@ export default function Support() {
                               <CatIcon className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <h3 className="font-medium text-foreground truncate">{ticket.subject}</h3>
                                 <Badge variant={status.variant} className="text-xs shrink-0">{status.label}</Badge>
+                                {ticket.priority && (
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${(priorityLabels[ticket.priority] || priorityLabels.medium).cls}`}>
+                                    {(priorityLabels[ticket.priority] || priorityLabels.medium).label}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-sm text-muted-foreground line-clamp-1">{ticket.message}</p>
                               <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
