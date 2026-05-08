@@ -60,8 +60,6 @@ export function useCreateDefaultStages() {
     'Desenvolvimento',
     'Homologação',
     'Produção',
-    'Suporte',
-    'Evolução',
   ];
 
   return useMutation({

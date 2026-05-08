@@ -31,6 +31,13 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
   closed: { label: 'Fechado', variant: 'outline' },
 };
 
+const priorityLabels: Record<string, { label: string; cls: string }> = {
+  low: { label: 'Baixa', cls: 'bg-muted text-muted-foreground' },
+  medium: { label: 'Média', cls: 'bg-warning/10 text-warning' },
+  high: { label: 'Alta', cls: 'bg-orange-500/10 text-orange-600' },
+  critical: { label: 'Crítica', cls: 'bg-destructive/10 text-destructive' },
+};
+
 export default function Support() {
   const { isAdmin } = useAuth();
   const { data: tickets, isLoading } = useSupportTickets();
@@ -42,11 +49,14 @@ export default function Support() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState('question');
+  const [priority, setPriority] = useState('medium');
   const [projectId, setProjectId] = useState('general');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [adminResponse, setAdminResponse] = useState('');
+  const [adminEndDate, setAdminEndDate] = useState('');
+  const [adminPriority, setAdminPriority] = useState('medium');
   const [ticketImageUrl, setTicketImageUrl] = useState<string | null>(null);
 
   const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,11 +103,11 @@ export default function Support() {
       }
 
       await createTicket.mutateAsync({ 
-        subject, message, category, attachmentUrl,
+        subject, message, category, attachmentUrl, priority,
         projectId: projectId === 'general' ? null : projectId,
       });
       toast({ title: 'Ticket enviado!', description: 'Sua solicitação foi registrada com sucesso.' });
-      setSubject(''); setMessage(''); setCategory('question'); setProjectId('general');
+      setSubject(''); setMessage(''); setCategory('question'); setPriority('medium'); setProjectId('general');
       removeAttachment(); setShowForm(false);
     } catch {
       toast({ title: 'Erro ao enviar', description: 'Tente novamente.', variant: 'destructive' });
@@ -105,11 +115,16 @@ export default function Support() {
   };
 
   const handleRespond = async () => {
-    if (!selectedTicket || !adminResponse.trim()) return;
+    if (!selectedTicket) return;
     try {
-      await respondTicket.mutateAsync({ ticketId: selectedTicket.id, response: adminResponse });
-      toast({ title: 'Resposta enviada!' });
-      setAdminResponse(''); setSelectedTicket(null);
+      await respondTicket.mutateAsync({
+        ticketId: selectedTicket.id,
+        response: adminResponse.trim() || undefined,
+        endDate: adminEndDate || undefined,
+        priority: adminPriority,
+      });
+      toast({ title: 'Atualizado!' });
+      setAdminResponse(''); setAdminEndDate(''); setSelectedTicket(null);
     } catch {
       toast({ title: 'Erro ao responder', description: 'Tente novamente.', variant: 'destructive' });
     }
@@ -165,6 +180,19 @@ export default function Support() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Prioridade</label>
+                  <Select value={priority} onValueChange={setPriority}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">🟢 Baixa</SelectItem>
+                      <SelectItem value="medium">🟡 Média</SelectItem>
+                      <SelectItem value="high">🟠 Alta</SelectItem>
+                      <SelectItem value="critical">🔴 Crítica</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Project Reference - MANDATORY */}
@@ -242,11 +270,13 @@ export default function Support() {
                   if (open) {
                     setSelectedTicket(ticket);
                     setAdminResponse(ticket.admin_response || '');
+                    setAdminEndDate(ticket.end_date || '');
+                    setAdminPriority(ticket.priority || 'medium');
                     if (ticket.attachment_url) {
                       const { data } = await supabase.storage.from('documents').createSignedUrl(ticket.attachment_url, 3600);
                       setTicketImageUrl(data?.signedUrl || null);
                     } else { setTicketImageUrl(null); }
-                  } else { setSelectedTicket(null); setAdminResponse(''); setTicketImageUrl(null); }
+                  } else { setSelectedTicket(null); setAdminResponse(''); setAdminEndDate(''); setTicketImageUrl(null); }
                 }}>
                   <DialogTrigger asChild>
                     <Card className="cursor-pointer hover:border-primary/30 transition-colors">
@@ -257,9 +287,14 @@ export default function Support() {
                               <CatIcon className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <h3 className="font-medium text-foreground truncate">{ticket.subject}</h3>
                                 <Badge variant={status.variant} className="text-xs shrink-0">{status.label}</Badge>
+                                {ticket.priority && (
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${(priorityLabels[ticket.priority] || priorityLabels.medium).cls}`}>
+                                    {(priorityLabels[ticket.priority] || priorityLabels.medium).label}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-sm text-muted-foreground line-clamp-1">{ticket.message}</p>
                               <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
@@ -279,6 +314,12 @@ export default function Support() {
                                 {ticket.status === 'answered' && (
                                   <span className="flex items-center gap-1 text-success">
                                     <CheckCircle2 className="h-3 w-3" /> Respondido
+                                  </span>
+                                )}
+                                {ticket.start_date && (
+                                  <span className="flex items-center gap-1">
+                                    📅 {format(new Date(ticket.start_date + 'T00:00:00'), 'dd/MM/yy')}
+                                    {ticket.end_date && ` → ${format(new Date(ticket.end_date + 'T00:00:00'), 'dd/MM/yy')}`}
                                   </span>
                                 )}
                               </div>
@@ -330,11 +371,29 @@ export default function Support() {
                       )}
                       {isAdmin && (
                         <div className="space-y-3 border-t pt-4">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-xs font-medium text-foreground">Prioridade</label>
+                              <Select value={adminPriority} onValueChange={setAdminPriority}>
+                                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="low">Baixa</SelectItem>
+                                  <SelectItem value="medium">Média</SelectItem>
+                                  <SelectItem value="high">Alta</SelectItem>
+                                  <SelectItem value="critical">Crítica</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-foreground">Data Término</label>
+                              <Input type="date" className="h-9" value={adminEndDate} onChange={e => setAdminEndDate(e.target.value)} />
+                            </div>
+                          </div>
                           <label className="text-sm font-medium text-foreground">Responder</label>
                           <Textarea placeholder="Escreva a resposta para o cliente..." value={adminResponse} onChange={e => setAdminResponse(e.target.value)} rows={3} />
-                          <Button onClick={handleRespond} disabled={respondTicket.isPending || !adminResponse.trim()} className="w-full gap-2">
+                          <Button onClick={handleRespond} disabled={respondTicket.isPending} className="w-full gap-2">
                             {respondTicket.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                            Enviar Resposta
+                            Salvar / Enviar Resposta
                           </Button>
                         </div>
                       )}

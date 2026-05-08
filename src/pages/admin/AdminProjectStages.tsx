@@ -136,9 +136,7 @@ export default function AdminProjectStages() {
     }));
   };
 
-  // Separate main and complementary
-  const mainStages = stages?.filter(s => s.order_index < 5) || [];
-  const complementaryStages = stages?.filter(s => s.order_index >= 5) || [];
+    const mainStages = stages || [];
 
   return (
     <AppLayout>
@@ -188,40 +186,17 @@ export default function AdminProjectStages() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : stages && stages.length > 0 ? (
-              <div className="space-y-6">
-                {mainStages.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Etapas do Projeto (1-5)</h3>
-                    <StagesTable 
-                      stages={mainStages}
-                      editingNotes={editingNotes}
-                      setEditingNotes={setEditingNotes}
-                      editingDates={editingDates}
-                      getDateValue={getDateValue}
-                      setDateField={setDateField}
-                      handleSaveNotes={handleSaveNotes}
-                      handleSaveDates={handleSaveDates}
-                      updatePending={updateStage.isPending}
-                    />
-                  </div>
-                )}
-                {complementaryStages.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pós-Produção (6-7)</h3>
-                    <StagesTable 
-                      stages={complementaryStages}
-                      editingNotes={editingNotes}
-                      setEditingNotes={setEditingNotes}
-                      editingDates={editingDates}
-                      getDateValue={getDateValue}
-                      setDateField={setDateField}
-                      handleSaveNotes={handleSaveNotes}
-                      handleSaveDates={handleSaveDates}
-                      updatePending={updateStage.isPending}
-                    />
-                  </div>
-                )}
-              </div>
+              <StagesTable 
+                stages={mainStages}
+                editingNotes={editingNotes}
+                setEditingNotes={setEditingNotes}
+                editingDates={editingDates}
+                getDateValue={getDateValue}
+                setDateField={setDateField}
+                handleSaveNotes={handleSaveNotes}
+                handleSaveDates={handleSaveDates}
+                updatePending={updateStage.isPending}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
                 <BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-4" />

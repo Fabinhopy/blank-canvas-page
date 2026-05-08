@@ -7,6 +7,7 @@ import { useAllStageItems } from '@/hooks/useAllStageItems';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StageChecklist } from '@/components/projeto/StageChecklist';
+import { EvolutionsSection } from '@/components/projeto/EvolutionsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -140,6 +141,15 @@ export default function ProjectProgress() {
             </CardContent>
           </Card>
         )}
+
+        {/* Evoluções (pós-produção) */}
+        {id && (
+          <EvolutionsSection
+            projectId={id}
+            isAdmin={isAdmin}
+            projectCompleted={progressPercent === 100 && (allItems?.totalItems || 0) > 0}
+          />
+        )}
       </div>
     </AppLayout>
   );
@@ -172,19 +182,12 @@ function TableView({ stages, expandedStage, setExpandedStage, projectId, isAdmin
   projectId: string;
   isAdmin: boolean;
 }) {
-  // Separate main stages (1-5) and complementary (6-7)
-  const mainStages = stages.filter(s => s.order_index < 5);
-  const complementaryStages = stages.filter(s => s.order_index >= 5);
-
   const renderStage = (stage: any) => {
     const Icon = stageIcons[stage.stage_name] || Circle;
     const isExpanded = expandedStage === stage.id;
 
     return (
-      <Card 
-        key={stage.id} 
-        className="transition-all cursor-pointer"
-      >
+      <Card key={stage.id} className="transition-all">
         <CardHeader 
           className="pb-2 cursor-pointer"
           onClick={() => setExpandedStage(isExpanded ? null : stage.id)}
@@ -231,21 +234,8 @@ function TableView({ stages, expandedStage, setExpandedStage, projectId, isAdmin
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Etapas do Projeto (1-5)</h3>
-        <div className="space-y-3">
-          {mainStages.map(renderStage)}
-        </div>
-      </div>
-      {complementaryStages.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pós-Produção</h3>
-          <div className="space-y-3">
-            {complementaryStages.map(renderStage)}
-          </div>
-        </div>
-      )}
+    <div className="space-y-3">
+      {stages.map(renderStage)}
     </div>
   );
 }
@@ -292,7 +282,6 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
         <div className="space-y-3">
           {stages.map((stage) => {
             const Icon = stageIcons[stage.stage_name] || Circle;
-            const isComplementary = stage.order_index >= 5;
 
             let leftPercent = 0;
             let widthPercent = 0;
@@ -309,11 +298,11 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
                 <div className="w-40 shrink-0 flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-4">{stage.order_index + 1}</span>
                   <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className={cn("text-sm truncate", isComplementary && "italic")}>{stage.stage_name}</span>
+                  <span className="text-sm truncate">{stage.stage_name}</span>
                 </div>
                 <div className="flex-1 h-8 bg-muted rounded-md relative overflow-hidden">
                   {stage.started_at && (
-                    <GanttBar stageId={stage.id} leftPercent={leftPercent} widthPercent={widthPercent} isComplementary={isComplementary} />
+                    <GanttBar stageId={stage.id} leftPercent={leftPercent} widthPercent={widthPercent} />
                   )}
                 </div>
               </div>
@@ -339,7 +328,7 @@ function GanttView({ stages, project }: { stages: any[]; project: any }) {
   );
 }
 
-function GanttBar({ stageId, leftPercent, widthPercent, isComplementary }: { stageId: string; leftPercent: number; widthPercent: number; isComplementary: boolean }) {
+function GanttBar({ stageId, leftPercent, widthPercent }: { stageId: string; leftPercent: number; widthPercent: number }) {
   const { data: items } = useProjectStageItems(stageId);
   const total = items?.length || 0;
   const completed = items?.filter(i => i.is_completed).length || 0;
@@ -349,8 +338,7 @@ function GanttBar({ stageId, leftPercent, widthPercent, isComplementary }: { sta
     <div
       className={cn(
         'absolute top-1 bottom-1 rounded transition-all',
-        status === 'completed' ? 'bg-primary' : status === 'in_progress' ? 'bg-warning' : 'bg-muted-foreground/30',
-        isComplementary && 'opacity-70'
+        status === 'completed' ? 'bg-primary' : status === 'in_progress' ? 'bg-warning' : 'bg-muted-foreground/30'
       )}
       style={{
         left: `${leftPercent}%`,

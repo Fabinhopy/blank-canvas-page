@@ -217,7 +217,7 @@ export default function ProjectOverview() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 {sortedStages.map((s, idx) => {
                   const isDone = s.status === 'completed';
                   const isCurrent = s.id === currentStage?.id && !isDone;
