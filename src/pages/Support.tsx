@@ -182,6 +182,19 @@ export default function Support() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Prioridade</label>
+                  <Select value={priority} onValueChange={setPriority}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">🟢 Baixa</SelectItem>
+                      <SelectItem value="medium">🟡 Média</SelectItem>
+                      <SelectItem value="high">🟠 Alta</SelectItem>
+                      <SelectItem value="critical">🔴 Crítica</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Project Reference - MANDATORY */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground flex items-center gap-2">
