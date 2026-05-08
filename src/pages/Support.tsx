@@ -31,6 +31,13 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
   closed: { label: 'Fechado', variant: 'outline' },
 };
 
+const priorityLabels: Record<string, { label: string; cls: string }> = {
+  low: { label: 'Baixa', cls: 'bg-muted text-muted-foreground' },
+  medium: { label: 'Média', cls: 'bg-warning/10 text-warning' },
+  high: { label: 'Alta', cls: 'bg-orange-500/10 text-orange-600' },
+  critical: { label: 'Crítica', cls: 'bg-destructive/10 text-destructive' },
+};
+
 export default function Support() {
   const { isAdmin } = useAuth();
   const { data: tickets, isLoading } = useSupportTickets();
@@ -42,11 +49,14 @@ export default function Support() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState('question');
+  const [priority, setPriority] = useState('medium');
   const [projectId, setProjectId] = useState('general');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [adminResponse, setAdminResponse] = useState('');
+  const [adminEndDate, setAdminEndDate] = useState('');
+  const [adminPriority, setAdminPriority] = useState('medium');
   const [ticketImageUrl, setTicketImageUrl] = useState<string | null>(null);
 
   const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,11 +103,11 @@ export default function Support() {
       }
 
       await createTicket.mutateAsync({ 
-        subject, message, category, attachmentUrl,
+        subject, message, category, attachmentUrl, priority,
         projectId: projectId === 'general' ? null : projectId,
       });
       toast({ title: 'Ticket enviado!', description: 'Sua solicitação foi registrada com sucesso.' });
-      setSubject(''); setMessage(''); setCategory('question'); setProjectId('general');
+      setSubject(''); setMessage(''); setCategory('question'); setPriority('medium'); setProjectId('general');
       removeAttachment(); setShowForm(false);
     } catch {
       toast({ title: 'Erro ao enviar', description: 'Tente novamente.', variant: 'destructive' });
@@ -105,11 +115,16 @@ export default function Support() {
   };
 
   const handleRespond = async () => {
-    if (!selectedTicket || !adminResponse.trim()) return;
+    if (!selectedTicket) return;
     try {
-      await respondTicket.mutateAsync({ ticketId: selectedTicket.id, response: adminResponse });
-      toast({ title: 'Resposta enviada!' });
-      setAdminResponse(''); setSelectedTicket(null);
+      await respondTicket.mutateAsync({
+        ticketId: selectedTicket.id,
+        response: adminResponse.trim() || undefined,
+        endDate: adminEndDate || undefined,
+        priority: adminPriority,
+      });
+      toast({ title: 'Atualizado!' });
+      setAdminResponse(''); setAdminEndDate(''); setSelectedTicket(null);
     } catch {
       toast({ title: 'Erro ao responder', description: 'Tente novamente.', variant: 'destructive' });
     }
