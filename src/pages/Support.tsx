@@ -371,11 +371,29 @@ export default function Support() {
                       )}
                       {isAdmin && (
                         <div className="space-y-3 border-t pt-4">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-xs font-medium text-foreground">Prioridade</label>
+                              <Select value={adminPriority} onValueChange={setAdminPriority}>
+                                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="low">Baixa</SelectItem>
+                                  <SelectItem value="medium">Média</SelectItem>
+                                  <SelectItem value="high">Alta</SelectItem>
+                                  <SelectItem value="critical">Crítica</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-foreground">Data Término</label>
+                              <Input type="date" className="h-9" value={adminEndDate} onChange={e => setAdminEndDate(e.target.value)} />
+                            </div>
+                          </div>
                           <label className="text-sm font-medium text-foreground">Responder</label>
                           <Textarea placeholder="Escreva a resposta para o cliente..." value={adminResponse} onChange={e => setAdminResponse(e.target.value)} rows={3} />
-                          <Button onClick={handleRespond} disabled={respondTicket.isPending || !adminResponse.trim()} className="w-full gap-2">
+                          <Button onClick={handleRespond} disabled={respondTicket.isPending} className="w-full gap-2">
                             {respondTicket.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                            Enviar Resposta
+                            Salvar / Enviar Resposta
                           </Button>
                         </div>
                       )}
