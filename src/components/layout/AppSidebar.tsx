@@ -18,9 +18,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientBranding } from '@/hooks/useClientBranding';
-import { useOpenTicketsCount } from '@/hooks/useOpenTicketsCount';
+
 import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
 import { 
   LayoutDashboard, 
   FolderKanban, 
@@ -43,6 +42,7 @@ const projectSubMenuItems = [
   { title: 'Progresso', path: '/progresso', icon: BarChart3 },
   { title: 'Documentos', path: '/documentos', icon: FileText },
   { title: 'Treinamentos', path: '/treinamentos', icon: GraduationCap },
+  { title: 'Suporte', path: '/suporte', icon: LifeBuoy },
 ];
 
 export function AppSidebar() {
@@ -53,7 +53,6 @@ export function AppSidebar() {
   const { data: projects, isLoading } = useProjects();
   const { isAdmin } = useAuth();
   const { data: clientBranding } = useClientBranding();
-  const { data: openTicketsCount } = useOpenTicketsCount();
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
 
   const currentProjectId = projectIdFromParams || location.pathname.match(/\/projeto\/([^/]+)/)?.[1];

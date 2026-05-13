@@ -19,7 +19,7 @@ import ProjectProgress from "./pages/projeto/ProjectProgress";
 import ProjectAgenda from "./pages/projeto/ProjectAgenda";
 import GlobalAgenda from "./pages/GlobalAgenda";
 import NotFound from "./pages/NotFound";
-import Support from "./pages/Support";
+import ProjectSupport from "./pages/projeto/ProjectSupport";
 import GlobalTrainings from "./pages/GlobalTrainings";
 import Chat from "./pages/Chat";
 
@@ -78,6 +78,10 @@ const App = () => (
             <Route path="/projeto/:id/treinamentos" element={
               <ProtectedRoute><ProjectTrainings /></ProtectedRoute>
             } />
+            <Route path="/projeto/:id/suporte" element={
+              <ProtectedRoute><ProjectSupport /></ProtectedRoute>
+            } />
+            
             
             {/* Admin routes */}
             <Route path="/admin/empresas" element={
@@ -119,10 +123,7 @@ const App = () => (
               <ProtectedRoute><GlobalTrainings /></ProtectedRoute>
             } />
             
-            {/* Support & Chat */}
-            <Route path="/suporte" element={
-              <ProtectedRoute><Support /></ProtectedRoute>
-            } />
+            {/* Chat */}
             <Route path="/chat" element={
               <ProtectedRoute><Chat /></ProtectedRoute>
             } />
