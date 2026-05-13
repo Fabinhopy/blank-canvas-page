@@ -273,7 +273,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Chat & SAC */}
+        {/* Chat */}
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -282,22 +282,6 @@ export function AppSidebar() {
                   <NavLink to="/chat" className="flex items-center gap-3">
                     <MessageCircle className="h-4 w-4" />
                     {!collapsed && <span>Chat</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/suporte'}>
-                  <NavLink to="/suporte" className="flex items-center gap-3">
-                    <LifeBuoy className="h-4 w-4" />
-                    {!collapsed && <span>Suporte</span>}
-                    {!collapsed && isAdmin && openTicketsCount && openTicketsCount > 0 ? (
-                      <Badge variant="destructive" className="ml-auto h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px] font-bold">
-                        {openTicketsCount}
-                      </Badge>
-                    ) : null}
-                    {collapsed && isAdmin && openTicketsCount && openTicketsCount > 0 ? (
-                      <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-destructive" />
-                    ) : null}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
