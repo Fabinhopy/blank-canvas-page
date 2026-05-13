@@ -271,6 +271,104 @@ export type Database = {
           },
         ]
       }
+      evolution_stage_items: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          document_id: string | null
+          evolution_stage_id: string
+          id: string
+          is_completed: boolean
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          document_id?: string | null
+          evolution_stage_id: string
+          id?: string
+          is_completed?: boolean
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          document_id?: string | null
+          evolution_stage_id?: string
+          id?: string
+          is_completed?: boolean
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolution_stage_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evolution_stage_items_evolution_stage_id_fkey"
+            columns: ["evolution_stage_id"]
+            isOneToOne: false
+            referencedRelation: "evolution_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evolution_stages: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          evolution_id: string
+          id: string
+          notes: string | null
+          order_index: number
+          stage_name: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          evolution_id: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          stage_name: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          evolution_id?: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          stage_name?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolution_stages_evolution_id_fkey"
+            columns: ["evolution_id"]
+            isOneToOne: false
+            referencedRelation: "project_evolutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -382,6 +480,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_announcements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_evolutions: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          project_id: string
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          project_id: string
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          project_id?: string
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_evolutions_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -631,11 +773,14 @@ export type Database = {
           attachment_url: string | null
           category: string
           created_at: string
+          end_date: string | null
           id: string
           message: string
+          priority: string
           project_id: string | null
           responded_at: string | null
           responded_by: string | null
+          start_date: string | null
           status: string
           subject: string
           updated_at: string
@@ -646,11 +791,14 @@ export type Database = {
           attachment_url?: string | null
           category?: string
           created_at?: string
+          end_date?: string | null
           id?: string
           message: string
+          priority?: string
           project_id?: string | null
           responded_at?: string | null
           responded_by?: string | null
+          start_date?: string | null
           status?: string
           subject: string
           updated_at?: string
@@ -661,11 +809,14 @@ export type Database = {
           attachment_url?: string | null
           category?: string
           created_at?: string
+          end_date?: string | null
           id?: string
           message?: string
+          priority?: string
           project_id?: string | null
           responded_at?: string | null
           responded_by?: string | null
+          start_date?: string | null
           status?: string
           subject?: string
           updated_at?: string
