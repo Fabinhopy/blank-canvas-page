@@ -9,6 +9,8 @@ export interface ProjectStageItem {
   completed_at: string | null;
   order_index: number;
   document_id: string | null;
+  start_date: string | null;
+  end_date: string | null;
   document?: { name: string; file_path: string } | null;
   created_at: string;
   updated_at: string;
