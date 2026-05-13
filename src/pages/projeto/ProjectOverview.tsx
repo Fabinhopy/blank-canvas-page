@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   FileText, Video, ArrowRight, Loader2, Calendar,
   BarChart3, CalendarDays, CheckCircle2, Clock, GraduationCap,
-  Download, Flag, PlayCircle, Target,
+  Download, Flag, PlayCircle, Target, LifeBuoy,
 } from 'lucide-react';
 import { format, isSameDay, isPast, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -133,10 +133,17 @@ export default function ProjectOverview() {
                 <p className="text-primary-foreground/80 mt-2 max-w-2xl">{project.description}</p>
               )}
             </div>
-            <Button variant="secondary" onClick={handleExport} disabled={exporting}>
-              {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              Exportar Versionamento
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" asChild>
+                <Link to={`/projeto/${id}/suporte`}>
+                  <LifeBuoy className="h-4 w-4 mr-2" /> Suporte
+                </Link>
+              </Button>
+              <Button variant="secondary" onClick={handleExport} disabled={exporting}>
+                {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                Exportar Versionamento
+              </Button>
+            </div>
           </div>
 
           {/* Timeline metrics */}

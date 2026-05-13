@@ -18,9 +18,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientBranding } from '@/hooks/useClientBranding';
-import { useOpenTicketsCount } from '@/hooks/useOpenTicketsCount';
+
 import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
 import { 
   LayoutDashboard, 
   FolderKanban, 
@@ -43,6 +42,7 @@ const projectSubMenuItems = [
   { title: 'Progresso', path: '/progresso', icon: BarChart3 },
   { title: 'Documentos', path: '/documentos', icon: FileText },
   { title: 'Treinamentos', path: '/treinamentos', icon: GraduationCap },
+  { title: 'Suporte', path: '/suporte', icon: LifeBuoy },
 ];
 
 export function AppSidebar() {
@@ -53,7 +53,6 @@ export function AppSidebar() {
   const { data: projects, isLoading } = useProjects();
   const { isAdmin } = useAuth();
   const { data: clientBranding } = useClientBranding();
-  const { data: openTicketsCount } = useOpenTicketsCount();
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
 
   const currentProjectId = projectIdFromParams || location.pathname.match(/\/projeto\/([^/]+)/)?.[1];
@@ -274,7 +273,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Chat & SAC */}
+        {/* Chat */}
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -283,22 +282,6 @@ export function AppSidebar() {
                   <NavLink to="/chat" className="flex items-center gap-3">
                     <MessageCircle className="h-4 w-4" />
                     {!collapsed && <span>Chat</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/suporte'}>
-                  <NavLink to="/suporte" className="flex items-center gap-3">
-                    <LifeBuoy className="h-4 w-4" />
-                    {!collapsed && <span>Suporte</span>}
-                    {!collapsed && isAdmin && openTicketsCount && openTicketsCount > 0 ? (
-                      <Badge variant="destructive" className="ml-auto h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px] font-bold">
-                        {openTicketsCount}
-                      </Badge>
-                    ) : null}
-                    {collapsed && isAdmin && openTicketsCount && openTicketsCount > 0 ? (
-                      <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-destructive" />
-                    ) : null}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

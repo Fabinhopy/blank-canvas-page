@@ -177,7 +177,7 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
               </span>
               {item.completed_at && (
                 <span className="text-xs text-muted-foreground hidden group-hover:inline">
-                  {format(new Date(item.completed_at), 'dd/MM', { locale: ptBR })}
+                  ✓ {format(new Date(item.completed_at), 'dd/MM', { locale: ptBR })}
                 </span>
               )}
               {isAdmin && (
@@ -206,6 +206,36 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
                 </div>
               )}
             </div>
+            {/* Optional dates (admin) */}
+            {isAdmin ? (
+              <div className="ml-9 mt-1 flex items-center gap-2 text-xs">
+                <label className="text-muted-foreground">Início:</label>
+                <input
+                  type="date"
+                  value={item.start_date || ''}
+                  onChange={(e) => updateItem.mutate({ id: item.id, updates: { start_date: e.target.value || null } as any })}
+                  className="bg-transparent border rounded px-1.5 py-0.5 text-xs"
+                />
+                <label className="text-muted-foreground">Prazo:</label>
+                <input
+                  type="date"
+                  value={item.end_date || ''}
+                  onChange={(e) => updateItem.mutate({ id: item.id, updates: { end_date: e.target.value || null } as any })}
+                  className="bg-transparent border rounded px-1.5 py-0.5 text-xs"
+                />
+                {item.completed_at && (
+                  <span className="text-success">✓ {format(new Date(item.completed_at), 'dd/MM/yy', { locale: ptBR })}</span>
+                )}
+              </div>
+            ) : (
+              (item.start_date || item.end_date) && (
+                <div className="ml-9 mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                  {item.start_date && <span>Início: {format(new Date(item.start_date + 'T00:00:00'), 'dd/MM/yy')}</span>}
+                  {item.end_date && <span>Prazo: {format(new Date(item.end_date + 'T00:00:00'), 'dd/MM/yy')}</span>}
+                  {item.completed_at && <span className="text-success">Concluído: {format(new Date(item.completed_at), 'dd/MM/yy')}</span>}
+                </div>
+              )
+            )}
             {/* Show linked document */}
             {item.document_id && item.document && (
               <div className="ml-9 mt-1 flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1">

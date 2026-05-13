@@ -5,7 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAllMilestones } from '@/hooks/useAllMilestones';
-import { useOpenTicketsCount } from '@/hooks/useOpenTicketsCount';
+
 import { 
   FolderKanban, 
   FileText, 
@@ -29,8 +29,6 @@ export default function Dashboard() {
   const { data: projects, isLoading } = useProjects();
   const { documentsCount, trainingsCount, stagesByProject } = useDashboardStats();
   const { data: milestones } = useAllMilestones();
-  const { data: openTicketsData } = useOpenTicketsCount();
-  const openTickets = openTicketsData ?? 0;
 
   const upcomingMilestones = milestones
     ?.filter(m => {
@@ -118,9 +116,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-destructive">{delayedProjects}</div>
-              <p className="text-xs text-muted-foreground">
-                {openTickets > 0 ? `${openTickets} tickets abertos` : 'sem tickets abertos'}
-              </p>
+              <p className="text-xs text-muted-foreground">projetos com prazo vencido</p>
             </CardContent>
           </Card>
         </div>
