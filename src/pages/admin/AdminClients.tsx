@@ -225,7 +225,7 @@ export default function AdminClients() {
     setEditingClient(null);
     setLogoFile(null);
     setLogoPreview(null);
-    setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C' });
+    setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 });
   };
 
   const handleEdit = (client: Client) => {
@@ -278,7 +278,7 @@ export default function AdminClients() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingClient(null); setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C' }); setLogoFile(null); setLogoPreview(null); }}>
+              <Button onClick={() => { setEditingClient(null); setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 }); setLogoFile(null); setLogoPreview(null); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Empresa
               </Button>
