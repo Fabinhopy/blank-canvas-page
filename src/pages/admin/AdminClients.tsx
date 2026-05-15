@@ -134,14 +134,17 @@ export default function AdminClients() {
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       // First create the client
-      const { data: newClient, error } = await supabase
+      const { data: newClient, error } = await (supabase as any)
         .from('clients')
         .insert({
           name: data.name,
           email: data.email || null,
           phone: data.phone || null,
           cnpj: data.cnpj || null,
-          sidebar_color: data.sidebar_color
+          sidebar_color: data.sidebar_color,
+          sla_high_hours: data.sla_high_hours,
+          sla_medium_hours: data.sla_medium_hours,
+          sla_low_hours: data.sla_low_hours,
         })
         .select()
         .single();
