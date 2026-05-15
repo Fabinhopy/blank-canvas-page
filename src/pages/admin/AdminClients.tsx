@@ -46,6 +46,9 @@ interface Client {
   logo_url: string | null;
   sidebar_color: string | null;
   created_at: string;
+  sla_high_hours?: number | null;
+  sla_medium_hours?: number | null;
+  sla_low_hours?: number | null;
 }
 
 const PRESET_COLORS = [
