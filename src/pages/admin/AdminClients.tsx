@@ -74,7 +74,10 @@ export default function AdminClients() {
     email: '',
     phone: '',
     cnpj: '',
-    sidebar_color: '#1A1F2C'
+    sidebar_color: '#1A1F2C',
+    sla_high_hours: 4,
+    sla_medium_hours: 12,
+    sla_low_hours: 24,
   });
 
   const { data: clients, isLoading } = useQuery({
