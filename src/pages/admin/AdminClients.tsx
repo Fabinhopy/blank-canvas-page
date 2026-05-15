@@ -418,6 +418,31 @@ export default function AdminClients() {
                       placeholder="(00) 00000-0000"
                     />
                   </div>
+
+                  {/* SLA de Suporte */}
+                  <div className="space-y-2 pt-2 border-t">
+                    <Label>SLA de Suporte (em horas)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Tempo máximo para resolução por prioridade. Tickets "críticos" usam o SLA de prioridade alta.
+                    </p>
+                    <div className="grid grid-cols-3 gap-3 pt-1">
+                      <div>
+                        <Label htmlFor="sla_high" className="text-xs">Alta</Label>
+                        <Input id="sla_high" type="number" min={1} value={formData.sla_high_hours}
+                          onChange={(e) => setFormData({ ...formData, sla_high_hours: Number(e.target.value) || 0 })} />
+                      </div>
+                      <div>
+                        <Label htmlFor="sla_med" className="text-xs">Média</Label>
+                        <Input id="sla_med" type="number" min={1} value={formData.sla_medium_hours}
+                          onChange={(e) => setFormData({ ...formData, sla_medium_hours: Number(e.target.value) || 0 })} />
+                      </div>
+                      <div>
+                        <Label htmlFor="sla_low" className="text-xs">Baixa</Label>
+                        <Input id="sla_low" type="number" min={1} value={formData.sla_low_hours}
+                          onChange={(e) => setFormData({ ...formData, sla_low_hours: Number(e.target.value) || 0 })} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={handleClose}>
