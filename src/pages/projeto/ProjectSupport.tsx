@@ -517,3 +517,56 @@ function TicketDialog({
     </Dialog>
   );
 }
+
+function SlaCards({ tickets, sla }: { tickets: SupportTicket[]; sla: { high: number; medium: number; low: number } }) {
+  const stats = useMemo(() => {
+    const open = tickets.filter(t => normalizeStatus(t.status) !== 'done');
+    const done = tickets.filter(t => normalizeStatus(t.status) === 'done');
+    let breached = 0, atRisk = 0, onTrack = 0, doneOnTime = 0, doneLate = 0;
+    let totalResolutionH = 0, doneCount = 0;
+    open.forEach(t => {
+      const info = computeSlaInfo(t as any, sla);
+      if (info.state === 'breached') breached++;
+      else if (info.state === 'at_risk') atRisk++;
+      else if (info.state === 'on_track') onTrack++;
+    });
+    done.forEach(t => {
+      const limit = slaLimitForPriority(t.priority, sla);
+      const start = t.start_at || t.created_at;
+      const end = t.end_at || t.responded_at || t.updated_at;
+      if (limit != null && start && end) {
+        const hours = (new Date(end).getTime() - new Date(start).getTime()) / 3_600_000;
+        totalResolutionH += hours;
+        doneCount++;
+        if (hours > limit) doneLate++;
+        else doneOnTime++;
+      }
+    });
+    const avgH = doneCount > 0 ? totalResolutionH / doneCount : 0;
+    const compliance = doneCount > 0 ? Math.round((doneOnTime / doneCount) * 100) : 100;
+    return { total: tickets.length, open: open.length, breached, atRisk, onTrack, doneOnTime, doneLate, avgH, compliance };
+  }, [tickets, sla]);
+
+  const cards = [
+    { label: 'Abertos', value: stats.open, hint: `${stats.total} no total`, cls: 'text-foreground' },
+    { label: 'Dentro do SLA', value: stats.onTrack, hint: 'a vencer normalmente', cls: 'text-success' },
+    { label: 'Em risco', value: stats.atRisk, hint: '< 25% do prazo restante', cls: 'text-warning' },
+    { label: 'SLA estourado', value: stats.breached, hint: 'fora do prazo', cls: 'text-destructive' },
+    { label: 'Cumprimento SLA', value: `${stats.compliance}%`, hint: `${stats.doneOnTime} no prazo / ${stats.doneLate} atrasados`, cls: 'text-primary' },
+    { label: 'Tempo médio', value: stats.avgH > 0 ? `${stats.avgH.toFixed(1)}h` : '—', hint: 'resolução média', cls: 'text-foreground' },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      {cards.map(c => (
+        <Card key={c.label} className="border-border/60">
+          <CardContent className="p-3">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{c.label}</p>
+            <p className={cn('text-xl font-bold mt-0.5', c.cls)}>{c.value}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{c.hint}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
