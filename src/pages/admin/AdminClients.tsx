@@ -241,7 +241,10 @@ export default function AdminClients() {
       email: client.email || '',
       phone: client.phone || '',
       cnpj: client.cnpj || '',
-      sidebar_color: client.sidebar_color || '#1A1F2C'
+      sidebar_color: client.sidebar_color || '#1A1F2C',
+      sla_high_hours: client.sla_high_hours ?? 4,
+      sla_medium_hours: client.sla_medium_hours ?? 12,
+      sla_low_hours: client.sla_low_hours ?? 24,
     });
     // Set logo preview from existing logo
     if (client.logo_url) {
