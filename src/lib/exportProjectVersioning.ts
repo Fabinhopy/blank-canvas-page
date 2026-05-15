@@ -20,7 +20,7 @@ export async function exportProjectVersioning(projectId: string) {
     (supabase as any).from('project_milestones').select('*').eq('project_id', projectId).order('due_date'),
     (supabase as any).from('documents').select('id,name,version,created_at,updated_at').eq('project_id', projectId).order('created_at'),
     (supabase as any).from('project_versions').select('*').eq('project_id', projectId).order('released_at', { ascending: false }),
-    (supabase as any).from('support_tickets').select('id,subject,category,status,created_at,responded_at').eq('project_id', projectId).order('created_at'),
+    (supabase as any).from('support_tickets').select('id,subject,category,ticket_type,priority,status,start_at,end_at,created_at,responded_at,resolution_notes,admin_response,assignee_id').eq('project_id', projectId).order('created_at'),
   ]);
 
   if (proj.error) throw proj.error;
@@ -97,6 +97,18 @@ export async function exportProjectVersioning(projectId: string) {
     </tr>
   `).join('');
 
+  const ticketRows = (tickets.data || []).map((t: any) => `
+    <tr>
+      <td>${t.subject}</td>
+      <td>${t.ticket_type || '—'}</td>
+      <td>${t.priority || '—'}</td>
+      <td><span class="badge b-${t.status}">${t.status}</span></td>
+      <td>${fmtDate(t.start_at || t.created_at)}</td>
+      <td>${fmtDate(t.end_at || t.responded_at)}</td>
+      <td>${(t.resolution_notes || t.admin_response || '').replace(/</g, '&lt;')}</td>
+    </tr>
+  `).join('');
+
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Versionamento — ${project.name}</title><style>${css}</style></head><body>
     <h1>${project.name}</h1>
     <div class="meta">Relatório de Versionamento gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</div>
@@ -113,6 +125,9 @@ export async function exportProjectVersioning(projectId: string) {
 
     <h2>Etapas</h2>
     <table><thead><tr><th>Etapa</th><th>Status</th><th>Início</th><th>Conclusão</th></tr></thead><tbody>${stagesRows}</tbody></table>
+
+    <h2>Tickets de Suporte</h2>
+    ${ticketRows ? `<table><thead><tr><th>Assunto</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Início</th><th>Fim</th><th>Observação</th></tr></thead><tbody>${ticketRows}</tbody></table>` : '<p style="color:#888">Nenhum ticket de suporte registrado.</p>'}
 
     <h2>Histórico de Alterações</h2>
     <table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>${logRows}</tbody></table>

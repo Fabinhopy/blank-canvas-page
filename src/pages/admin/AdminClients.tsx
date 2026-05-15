@@ -46,6 +46,9 @@ interface Client {
   logo_url: string | null;
   sidebar_color: string | null;
   created_at: string;
+  sla_high_hours?: number | null;
+  sla_medium_hours?: number | null;
+  sla_low_hours?: number | null;
 }
 
 const PRESET_COLORS = [
@@ -71,7 +74,10 @@ export default function AdminClients() {
     email: '',
     phone: '',
     cnpj: '',
-    sidebar_color: '#1A1F2C'
+    sidebar_color: '#1A1F2C',
+    sla_high_hours: 4,
+    sla_medium_hours: 12,
+    sla_low_hours: 24,
   });
 
   const { data: clients, isLoading } = useQuery({
@@ -128,14 +134,17 @@ export default function AdminClients() {
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       // First create the client
-      const { data: newClient, error } = await supabase
+      const { data: newClient, error } = await (supabase as any)
         .from('clients')
         .insert({
           name: data.name,
           email: data.email || null,
           phone: data.phone || null,
           cnpj: data.cnpj || null,
-          sidebar_color: data.sidebar_color
+          sidebar_color: data.sidebar_color,
+          sla_high_hours: data.sla_high_hours,
+          sla_medium_hours: data.sla_medium_hours,
+          sla_low_hours: data.sla_low_hours,
         })
         .select()
         .single();
@@ -172,7 +181,7 @@ export default function AdminClients() {
         if (newLogoPath) logoPath = newLogoPath;
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('clients')
         .update({
           name: data.name,
@@ -180,7 +189,10 @@ export default function AdminClients() {
           phone: data.phone || null,
           cnpj: data.cnpj || null,
           sidebar_color: data.sidebar_color,
-          logo_url: logoPath
+          logo_url: logoPath,
+          sla_high_hours: data.sla_high_hours,
+          sla_medium_hours: data.sla_medium_hours,
+          sla_low_hours: data.sla_low_hours,
         })
         .eq('id', id);
       
@@ -219,7 +231,7 @@ export default function AdminClients() {
     setEditingClient(null);
     setLogoFile(null);
     setLogoPreview(null);
-    setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C' });
+    setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 });
   };
 
   const handleEdit = (client: Client) => {
@@ -229,7 +241,10 @@ export default function AdminClients() {
       email: client.email || '',
       phone: client.phone || '',
       cnpj: client.cnpj || '',
-      sidebar_color: client.sidebar_color || '#1A1F2C'
+      sidebar_color: client.sidebar_color || '#1A1F2C',
+      sla_high_hours: client.sla_high_hours ?? 4,
+      sla_medium_hours: client.sla_medium_hours ?? 12,
+      sla_low_hours: client.sla_low_hours ?? 24,
     });
     // Set logo preview from existing logo
     if (client.logo_url) {
@@ -272,7 +287,7 @@ export default function AdminClients() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingClient(null); setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C' }); setLogoFile(null); setLogoPreview(null); }}>
+              <Button onClick={() => { setEditingClient(null); setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 }); setLogoFile(null); setLogoPreview(null); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Empresa
               </Button>
@@ -402,6 +417,31 @@ export default function AdminClients() {
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="(00) 00000-0000"
                     />
+                  </div>
+
+                  {/* SLA de Suporte */}
+                  <div className="space-y-2 pt-2 border-t">
+                    <Label>SLA de Suporte (em horas)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Tempo máximo para resolução por prioridade. Tickets "críticos" usam o SLA de prioridade alta.
+                    </p>
+                    <div className="grid grid-cols-3 gap-3 pt-1">
+                      <div>
+                        <Label htmlFor="sla_high" className="text-xs">Alta</Label>
+                        <Input id="sla_high" type="number" min={1} value={formData.sla_high_hours}
+                          onChange={(e) => setFormData({ ...formData, sla_high_hours: Number(e.target.value) || 0 })} />
+                      </div>
+                      <div>
+                        <Label htmlFor="sla_med" className="text-xs">Média</Label>
+                        <Input id="sla_med" type="number" min={1} value={formData.sla_medium_hours}
+                          onChange={(e) => setFormData({ ...formData, sla_medium_hours: Number(e.target.value) || 0 })} />
+                      </div>
+                      <div>
+                        <Label htmlFor="sla_low" className="text-xs">Baixa</Label>
+                        <Input id="sla_low" type="number" min={1} value={formData.sla_low_hours}
+                          onChange={(e) => setFormData({ ...formData, sla_low_hours: Number(e.target.value) || 0 })} />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
