@@ -10,6 +10,7 @@ import {
   useAdminUsers,
   SupportTicket,
 } from '@/hooks/useSupportTickets';
+import { useProjectClientSLA, computeSlaInfo, DEFAULT_SLA, slaLimitForPriority } from '@/hooks/useClientSLA';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
