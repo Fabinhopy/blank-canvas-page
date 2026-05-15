@@ -126,6 +126,9 @@ export async function exportProjectVersioning(projectId: string) {
     <h2>Etapas</h2>
     <table><thead><tr><th>Etapa</th><th>Status</th><th>Início</th><th>Conclusão</th></tr></thead><tbody>${stagesRows}</tbody></table>
 
+    <h2>Tickets de Suporte</h2>
+    ${ticketRows ? `<table><thead><tr><th>Assunto</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Início</th><th>Fim</th><th>Observação</th></tr></thead><tbody>${ticketRows}</tbody></table>` : '<p style="color:#888">Nenhum ticket de suporte registrado.</p>'}
+
     <h2>Histórico de Alterações</h2>
     <table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>${logRows}</tbody></table>
   </body></html>`;
