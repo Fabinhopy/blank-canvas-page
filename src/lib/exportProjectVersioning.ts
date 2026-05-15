@@ -20,7 +20,7 @@ export async function exportProjectVersioning(projectId: string) {
     (supabase as any).from('project_milestones').select('*').eq('project_id', projectId).order('due_date'),
     (supabase as any).from('documents').select('id,name,version,created_at,updated_at').eq('project_id', projectId).order('created_at'),
     (supabase as any).from('project_versions').select('*').eq('project_id', projectId).order('released_at', { ascending: false }),
-    (supabase as any).from('support_tickets').select('id,subject,category,status,created_at,responded_at').eq('project_id', projectId).order('created_at'),
+    (supabase as any).from('support_tickets').select('id,subject,category,ticket_type,priority,status,start_at,end_at,created_at,responded_at,resolution_notes,admin_response,assignee_id').eq('project_id', projectId).order('created_at'),
   ]);
 
   if (proj.error) throw proj.error;
