@@ -87,6 +87,7 @@ export default function ProjectSupport() {
   const { data: project } = useProject(projectId);
   const { data: tickets, isLoading } = useSupportTickets(projectId);
   const { data: admins } = useAdminUsers();
+  const { data: sla } = useProjectClientSLA(projectId);
   const createTicket = useCreateTicket();
   const updateTicket = useUpdateTicket();
 
