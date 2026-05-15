@@ -248,6 +248,9 @@ export default function ProjectSupport() {
           </div>
         </div>
 
+        {/* SLA Cards */}
+        <SlaCards tickets={tickets || []} sla={sla || DEFAULT_SLA} />
+
         {/* Filters */}
         <Card>
           <CardContent className="p-3 flex flex-wrap items-center gap-2">
