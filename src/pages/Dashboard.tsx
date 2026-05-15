@@ -273,3 +273,28 @@ export default function Dashboard() {
     </AppLayout>
   );
 }
+
+function ExportAllButton() {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await exportAllDataToExcel();
+          toast.success('Exportação concluída');
+        } catch (e: any) {
+          toast.error('Erro ao exportar: ' + e.message);
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <Download className="h-4 w-4" />
+      {loading ? 'Exportando...' : 'Exportar tudo (.xlsx)'}
+    </Button>
+  );
+}
