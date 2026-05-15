@@ -53,15 +53,18 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Bem-vindo, {profile?.full_name?.split(' ')[0] || 'Usuário'}!
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {userRole === 'admin' 
-              ? 'Gerencie os projetos e conteúdos dos seus clientes.'
-              : 'Acesse seus projetos e materiais técnicos.'}
-          </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Bem-vindo, {profile?.full_name?.split(' ')[0] || 'Usuário'}!
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {userRole === 'admin' 
+                ? 'Gerencie os projetos e conteúdos dos seus clientes.'
+                : 'Acesse seus projetos e materiais técnicos.'}
+            </p>
+          </div>
+          {userRole === 'admin' && <ExportAllButton />}
         </div>
 
         {/* KPI Cards */}
