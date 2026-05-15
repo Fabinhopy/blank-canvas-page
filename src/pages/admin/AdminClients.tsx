@@ -181,7 +181,7 @@ export default function AdminClients() {
         if (newLogoPath) logoPath = newLogoPath;
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('clients')
         .update({
           name: data.name,
@@ -189,7 +189,10 @@ export default function AdminClients() {
           phone: data.phone || null,
           cnpj: data.cnpj || null,
           sidebar_color: data.sidebar_color,
-          logo_url: logoPath
+          logo_url: logoPath,
+          sla_high_hours: data.sla_high_hours,
+          sla_medium_hours: data.sla_medium_hours,
+          sla_low_hours: data.sla_low_hours,
         })
         .eq('id', id);
       
