@@ -276,10 +276,12 @@ export type Database = {
           completed_at: string | null
           created_at: string
           document_id: string | null
+          end_date: string | null
           evolution_stage_id: string
           id: string
           is_completed: boolean
           order_index: number
+          start_date: string | null
           title: string
           updated_at: string
         }
@@ -287,10 +289,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           document_id?: string | null
+          end_date?: string | null
           evolution_stage_id: string
           id?: string
           is_completed?: boolean
           order_index?: number
+          start_date?: string | null
           title: string
           updated_at?: string
         }
@@ -298,10 +302,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           document_id?: string | null
+          end_date?: string | null
           evolution_stage_id?: string
           id?: string
           is_completed?: boolean
           order_index?: number
+          start_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -583,10 +589,12 @@ export type Database = {
           completed_at: string | null
           created_at: string
           document_id: string | null
+          end_date: string | null
           id: string
           is_completed: boolean
           order_index: number
           stage_id: string
+          start_date: string | null
           title: string
           updated_at: string
         }
@@ -594,10 +602,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           document_id?: string | null
+          end_date?: string | null
           id?: string
           is_completed?: boolean
           order_index?: number
           stage_id: string
+          start_date?: string | null
           title: string
           updated_at?: string
         }
@@ -605,10 +615,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           document_id?: string | null
+          end_date?: string | null
           id?: string
           is_completed?: boolean
           order_index?: number
           stage_id?: string
+          start_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -770,55 +782,70 @@ export type Database = {
       support_tickets: {
         Row: {
           admin_response: string | null
+          assignee_id: string | null
           attachment_url: string | null
           category: string
           created_at: string
+          end_at: string | null
           end_date: string | null
           id: string
           message: string
           priority: string
           project_id: string | null
+          resolution_notes: string | null
           responded_at: string | null
           responded_by: string | null
+          start_at: string | null
           start_date: string | null
           status: string
           subject: string
+          ticket_type: string
           updated_at: string
           user_id: string
         }
         Insert: {
           admin_response?: string | null
+          assignee_id?: string | null
           attachment_url?: string | null
           category?: string
           created_at?: string
+          end_at?: string | null
           end_date?: string | null
           id?: string
           message: string
           priority?: string
           project_id?: string | null
+          resolution_notes?: string | null
           responded_at?: string | null
           responded_by?: string | null
+          start_at?: string | null
           start_date?: string | null
           status?: string
           subject: string
+          ticket_type?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           admin_response?: string | null
+          assignee_id?: string | null
           attachment_url?: string | null
           category?: string
           created_at?: string
+          end_at?: string | null
           end_date?: string | null
           id?: string
           message?: string
           priority?: string
           project_id?: string | null
+          resolution_notes?: string | null
           responded_at?: string | null
           responded_by?: string | null
+          start_at?: string | null
           start_date?: string | null
           status?: string
           subject?: string
+          ticket_type?: string
           updated_at?: string
           user_id?: string
         }
