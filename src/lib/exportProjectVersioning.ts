@@ -97,6 +97,18 @@ export async function exportProjectVersioning(projectId: string) {
     </tr>
   `).join('');
 
+  const ticketRows = (tickets.data || []).map((t: any) => `
+    <tr>
+      <td>${t.subject}</td>
+      <td>${t.ticket_type || '—'}</td>
+      <td>${t.priority || '—'}</td>
+      <td><span class="badge b-${t.status}">${t.status}</span></td>
+      <td>${fmtDate(t.start_at || t.created_at)}</td>
+      <td>${fmtDate(t.end_at || t.responded_at)}</td>
+      <td>${(t.resolution_notes || t.admin_response || '').replace(/</g, '&lt;')}</td>
+    </tr>
+  `).join('');
+
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Versionamento — ${project.name}</title><style>${css}</style></head><body>
     <h1>${project.name}</h1>
     <div class="meta">Relatório de Versionamento gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</div>
