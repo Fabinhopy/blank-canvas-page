@@ -132,6 +132,9 @@ export type Database = {
           name: string
           phone: string | null
           sidebar_color: string | null
+          sla_high_hours: number
+          sla_low_hours: number
+          sla_medium_hours: number
           updated_at: string
         }
         Insert: {
@@ -143,6 +146,9 @@ export type Database = {
           name: string
           phone?: string | null
           sidebar_color?: string | null
+          sla_high_hours?: number
+          sla_low_hours?: number
+          sla_medium_hours?: number
           updated_at?: string
         }
         Update: {
@@ -154,6 +160,9 @@ export type Database = {
           name?: string
           phone?: string | null
           sidebar_color?: string | null
+          sla_high_hours?: number
+          sla_low_hours?: number
+          sla_medium_hours?: number
           updated_at?: string
         }
         Relationships: []
