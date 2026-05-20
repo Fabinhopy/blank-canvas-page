@@ -20,21 +20,66 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
         setIsValidSession(true);
         setChecking(false);
       }
     });
 
-    // Also check if we already have a session (user clicked recovery link)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsValidSession(true);
+    (async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        const hash = window.location.hash.startsWith('#')
+          ? new URLSearchParams(window.location.hash.slice(1))
+          : null;
+        const errorDesc = url.searchParams.get('error_description') || hash?.get('error_description');
+
+        if (errorDesc) {
+          setError(decodeURIComponent(errorDesc));
+          setChecking(false);
+          return;
+        }
+
+        // PKCE flow: ?code=...
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            setError('Link inválido ou expirado. Solicite um novo.');
+          } else {
+            setIsValidSession(true);
+          }
+          setChecking(false);
+          return;
+        }
+
+        // Implicit flow: #access_token=...&type=recovery
+        const accessToken = hash?.get('access_token');
+        const refreshToken = hash?.get('refresh_token');
+        const type = hash?.get('type');
+        if (accessToken && refreshToken && type === 'recovery') {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) {
+            setError('Link inválido ou expirado. Solicite um novo.');
+          } else {
+            setIsValidSession(true);
+          }
+          setChecking(false);
+          return;
+        }
+
+        // Fallback: existing session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) setIsValidSession(true);
+        setChecking(false);
+      } catch (e) {
+        setChecking(false);
       }
-      setChecking(false);
-    });
+    })();
 
     return () => subscription.unsubscribe();
   }, []);
