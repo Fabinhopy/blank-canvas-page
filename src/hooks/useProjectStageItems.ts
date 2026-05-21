@@ -42,7 +42,7 @@ export function useProjectStageItems(stageId: string | undefined) {
 export function useCreateStageItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { stage_id: string; title: string; order_index?: number }) => {
+    mutationFn: async (item: { stage_id: string; title: string; order_index?: number; item_type?: StageItemType }) => {
       const { error } = await (supabase as any)
         .from('project_stage_items')
         .insert(item);
