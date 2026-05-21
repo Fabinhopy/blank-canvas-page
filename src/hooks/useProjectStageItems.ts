@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export type StageItemType = 'task' | 'development' | 'meeting' | 'review' | 'other';
+
 export interface ProjectStageItem {
   id: string;
   stage_id: string;
@@ -11,6 +13,7 @@ export interface ProjectStageItem {
   document_id: string | null;
   start_date: string | null;
   end_date: string | null;
+  item_type: StageItemType;
   document?: { name: string; file_path: string } | null;
   created_at: string;
   updated_at: string;
@@ -39,7 +42,7 @@ export function useProjectStageItems(stageId: string | undefined) {
 export function useCreateStageItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { stage_id: string; title: string; order_index?: number }) => {
+    mutationFn: async (item: { stage_id: string; title: string; order_index?: number; item_type?: StageItemType }) => {
       const { error } = await (supabase as any)
         .from('project_stage_items')
         .insert(item);
