@@ -18,6 +18,7 @@ import {
 import { format, isSameDay, isPast, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { exportProjectVersioning } from '@/lib/exportProjectVersioning';
+import { exportProjectTasksExcel } from '@/lib/exportProjectTasksExcel';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -39,6 +40,7 @@ export default function ProjectOverview() {
   const { data: milestones } = useProjectMilestones(id);
   const { data: allItems } = useAllStageItems(id);
   const [exporting, setExporting] = useState(false);
+  const [exportingTasks, setExportingTasks] = useState(false);
 
   const handleExport = async () => {
     if (!id) return;
@@ -50,6 +52,19 @@ export default function ProjectOverview() {
       toast.error('Erro ao exportar: ' + e.message);
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleExportTasks = async () => {
+    if (!id) return;
+    try {
+      setExportingTasks(true);
+      await exportProjectTasksExcel(id);
+      toast.success('Planilha exportada!');
+    } catch (e: any) {
+      toast.error('Erro ao exportar: ' + e.message);
+    } finally {
+      setExportingTasks(false);
     }
   };
 
@@ -138,6 +153,10 @@ export default function ProjectOverview() {
                 <Link to={`/projeto/${id}/suporte`}>
                   <LifeBuoy className="h-4 w-4 mr-2" /> Suporte
                 </Link>
+              </Button>
+              <Button variant="secondary" onClick={handleExportTasks} disabled={exportingTasks}>
+                {exportingTasks ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                Exportar Tarefas (.xlsx)
               </Button>
               <Button variant="secondary" onClick={handleExport} disabled={exporting}>
                 {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
