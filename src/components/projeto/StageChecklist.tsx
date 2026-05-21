@@ -294,8 +294,18 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
             value={newItemTitle}
             onChange={(e) => setNewItemTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-            className="h-8 text-sm"
+            className="h-8 text-sm flex-1"
           />
+          <Select value={newItemType} onValueChange={(v) => setNewItemType(v as StageItemType)}>
+            <SelectTrigger className="h-8 w-[140px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TYPE_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             size="sm"
             variant="outline"
