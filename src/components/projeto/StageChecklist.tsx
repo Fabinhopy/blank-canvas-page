@@ -33,6 +33,7 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
   const updateItem = useUpdateStageItem();
   const deleteItem = useDeleteStageItem();
   const [newItemTitle, setNewItemTitle] = useState('');
+  const [newItemType, setNewItemType] = useState<StageItemType>('task');
   const [uploadingItemId, setUploadingItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
@@ -40,10 +41,11 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
   const handleAddItem = () => {
     if (!newItemTitle.trim()) return;
     createItem.mutate(
-      { stage_id: stageId, title: newItemTitle.trim(), order_index: items?.length || 0 },
+      { stage_id: stageId, title: newItemTitle.trim(), item_type: newItemType, order_index: items?.length || 0 },
       {
         onSuccess: () => {
           setNewItemTitle('');
+          setNewItemType('task');
           toast.success('Item adicionado!');
         },
         onError: (err: Error) => toast.error('Erro: ' + err.message),
