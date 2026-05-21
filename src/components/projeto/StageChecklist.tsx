@@ -188,6 +188,25 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
               )}>
                 {item.title}
               </span>
+              {isAdmin ? (
+                <Select
+                  value={item.item_type || 'task'}
+                  onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { item_type: v as StageItemType } as any })}
+                >
+                  <SelectTrigger className="h-6 w-[130px] text-[11px] px-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TYPE_OPTIONS.map(o => (
+                      <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                  {TYPE_LABEL[item.item_type] || 'Tarefa'}
+                </Badge>
+              )}
               {item.completed_at && (
                 <span className="text-xs text-muted-foreground hidden group-hover:inline">
                   ✓ {format(new Date(item.completed_at), 'dd/MM', { locale: ptBR })}
