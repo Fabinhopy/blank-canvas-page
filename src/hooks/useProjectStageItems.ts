@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export type StageItemType = 'task' | 'development' | 'meeting' | 'review' | 'other';
+
 export interface ProjectStageItem {
   id: string;
   stage_id: string;
@@ -11,6 +13,7 @@ export interface ProjectStageItem {
   document_id: string | null;
   start_date: string | null;
   end_date: string | null;
+  item_type: StageItemType;
   document?: { name: string; file_path: string } | null;
   created_at: string;
   updated_at: string;

@@ -7,6 +7,14 @@ function fmt(d: string | null | undefined): string {
   try { return format(new Date(d.length <= 10 ? d + 'T00:00:00' : d), 'dd/MM/yyyy HH:mm'); } catch { return d as string; }
 }
 
+const TYPE_LABEL: Record<string, string> = {
+  task: 'Tarefa',
+  development: 'Desenvolvimento',
+  meeting: 'Reunião',
+  review: 'Revisão',
+  other: 'Outro',
+};
+
 /** Export a single-sheet .xlsx with all project tasks + support tickets in one big table. */
 export async function exportProjectTasksExcel(projectId: string) {
   const [proj, stages, items, milestones, tickets] = await Promise.all([
@@ -27,10 +35,12 @@ export async function exportProjectTasksExcel(projectId: string) {
 
   (items.data || []).forEach((i: any) => {
     rows.push({
-      'Origem': 'Tarefa',
+      'Projeto': projectName,
+      'Vínculo': 'Projeto',
+      'Origem': 'Checklist / Etapa',
       'Etapa': i.project_stages?.stage_name || '',
       'Título / Assunto': i.title,
-      'Tipo': '',
+      'Tipo': TYPE_LABEL[i.item_type] || i.item_type || 'Tarefa',
       'Prioridade': '',
       'Status': i.is_completed ? 'Concluído' : 'Pendente',
       'Início': fmt(i.start_date),
@@ -44,6 +54,8 @@ export async function exportProjectTasksExcel(projectId: string) {
 
   (milestones.data || []).forEach((m: any) => {
     rows.push({
+      'Projeto': projectName,
+      'Vínculo': 'Projeto',
       'Origem': 'Agenda',
       'Etapa': '',
       'Título / Assunto': m.title,
@@ -61,10 +73,12 @@ export async function exportProjectTasksExcel(projectId: string) {
 
   (tickets.data || []).forEach((t: any) => {
     rows.push({
+      'Projeto': projectName,
+      'Vínculo': t.project_id ? 'Projeto' : 'Tarefa avulsa',
       'Origem': 'Suporte',
       'Etapa': '',
       'Título / Assunto': t.subject,
-      'Tipo': t.ticket_type || '',
+      'Tipo': TYPE_LABEL[t.ticket_type] || t.ticket_type || '',
       'Prioridade': t.priority || '',
       'Status': t.status || '',
       'Início': fmt(t.start_at || t.start_date),
