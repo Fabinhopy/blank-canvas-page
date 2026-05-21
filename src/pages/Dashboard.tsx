@@ -5,10 +5,6 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAllMilestones } from '@/hooks/useAllMilestones';
-import { exportAllDataToExcel } from '@/lib/exportAllDataExcel';
-import { useState } from 'react';
-import { Download } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { 
   FolderKanban, 
@@ -57,18 +53,15 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Bem-vindo, {profile?.full_name?.split(' ')[0] || 'Usuário'}!
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {userRole === 'admin' 
-                ? 'Gerencie os projetos e conteúdos dos seus clientes.'
-                : 'Acesse seus projetos e materiais técnicos.'}
-            </p>
-          </div>
-          {userRole === 'admin' && <ExportAllButton />}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Bem-vindo, {profile?.full_name?.split(' ')[0] || 'Usuário'}!
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {userRole === 'admin' 
+              ? 'Gerencie os projetos e conteúdos dos seus clientes.'
+              : 'Acesse seus projetos e materiais técnicos.'}
+          </p>
         </div>
 
         {/* KPI Cards */}
@@ -271,30 +264,5 @@ export default function Dashboard() {
         </div>
       </div>
     </AppLayout>
-  );
-}
-
-function ExportAllButton() {
-  const [loading, setLoading] = useState(false);
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={loading}
-      onClick={async () => {
-        setLoading(true);
-        try {
-          await exportAllDataToExcel();
-          toast.success('Exportação concluída');
-        } catch (e: any) {
-          toast.error('Erro ao exportar: ' + e.message);
-        } finally {
-          setLoading(false);
-        }
-      }}
-    >
-      <Download className="h-4 w-4" />
-      {loading ? 'Exportando...' : 'Exportar tudo (.xlsx)'}
-    </Button>
   );
 }

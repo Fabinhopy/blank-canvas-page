@@ -71,7 +71,6 @@ export default function AdminClients() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     phone: '',
     cnpj: '',
     sidebar_color: '#1A1F2C',
@@ -138,7 +137,6 @@ export default function AdminClients() {
         .from('clients')
         .insert({
           name: data.name,
-          email: data.email || null,
           phone: data.phone || null,
           cnpj: data.cnpj || null,
           sidebar_color: data.sidebar_color,
@@ -185,7 +183,6 @@ export default function AdminClients() {
         .from('clients')
         .update({
           name: data.name,
-          email: data.email || null,
           phone: data.phone || null,
           cnpj: data.cnpj || null,
           sidebar_color: data.sidebar_color,
@@ -231,14 +228,13 @@ export default function AdminClients() {
     setEditingClient(null);
     setLogoFile(null);
     setLogoPreview(null);
-    setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 });
+    setFormData({ name: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 });
   };
 
   const handleEdit = (client: Client) => {
     setEditingClient(client);
     setFormData({
       name: client.name,
-      email: client.email || '',
       phone: client.phone || '',
       cnpj: client.cnpj || '',
       sidebar_color: client.sidebar_color || '#1A1F2C',
@@ -287,7 +283,7 @@ export default function AdminClients() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingClient(null); setFormData({ name: '', email: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 }); setLogoFile(null); setLogoPreview(null); }}>
+              <Button onClick={() => { setEditingClient(null); setFormData({ name: '', phone: '', cnpj: '', sidebar_color: '#1A1F2C', sla_high_hours: 4, sla_medium_hours: 12, sla_low_hours: 24 }); setLogoFile(null); setLogoPreview(null); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Empresa
               </Button>
@@ -400,17 +396,7 @@ export default function AdminClients() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="contato@empresa.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone</Label>
+                    <Label htmlFor="phone">Telefone / Celular</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -480,8 +466,9 @@ export default function AdminClients() {
                     <TableHead>Logo</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>CNPJ</TableHead>
-                    <TableHead>E-mail</TableHead>
+                    <TableHead>Telefone</TableHead>
                     <TableHead>Cor</TableHead>
+                    <TableHead>Cadastrado em</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -503,13 +490,16 @@ export default function AdminClients() {
                       </TableCell>
                       <TableCell className="font-medium">{client.name}</TableCell>
                       <TableCell>{client.cnpj || '—'}</TableCell>
-                      <TableCell>{client.email || '—'}</TableCell>
+                      <TableCell>{client.phone || '—'}</TableCell>
                       <TableCell>
                         <div 
                           className="w-6 h-6 rounded border"
                           style={{ backgroundColor: client.sidebar_color || '#1A1F2C' }}
                           title={client.sidebar_color || '#1A1F2C'}
                         />
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(client.created_at).toLocaleDateString('pt-BR')}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
