@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { useProjectStageItems, useCreateStageItem, useUpdateStageItem, useDeleteStageItem, type StageItemType } from '@/hooks/useProjectStageItems';
+import { useProjectStageItems, useCreateStageItem, useUpdateStageItem, useDeleteStageItem, type StageItemType, type StageItemPriority } from '@/hooks/useProjectStageItems';
+import { useAdminUsers } from '@/hooks/useSupportTickets';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,12 @@ const TYPE_OPTIONS: { value: StageItemType; label: string }[] = [
 ];
 const TYPE_LABEL = Object.fromEntries(TYPE_OPTIONS.map(t => [t.value, t.label])) as Record<string, string>;
 
+const PRIORITY_OPTIONS: { value: StageItemPriority; label: string; cls: string }[] = [
+  { value: 'low',    label: '🟢 Baixa',  cls: 'bg-muted text-muted-foreground' },
+  { value: 'medium', label: '🟡 Média',  cls: 'bg-warning/10 text-warning' },
+  { value: 'high',   label: '🟠 Alta',   cls: 'bg-orange-500/10 text-orange-600 dark:text-orange-400' },
+];
+
 interface StageChecklistProps {
   stageId: string;
   projectId: string;
@@ -32,8 +39,10 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
   const createItem = useCreateStageItem();
   const updateItem = useUpdateStageItem();
   const deleteItem = useDeleteStageItem();
+  const { data: admins } = useAdminUsers();
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemType, setNewItemType] = useState<StageItemType>('task');
+  const [newItemPriority, setNewItemPriority] = useState<StageItemPriority>('medium');
   const [uploadingItemId, setUploadingItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
@@ -41,11 +50,18 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
   const handleAddItem = () => {
     if (!newItemTitle.trim()) return;
     createItem.mutate(
-      { stage_id: stageId, title: newItemTitle.trim(), item_type: newItemType, order_index: items?.length || 0 },
+      {
+        stage_id: stageId,
+        title: newItemTitle.trim(),
+        item_type: newItemType,
+        priority: newItemPriority,
+        order_index: items?.length || 0,
+      },
       {
         onSuccess: () => {
           setNewItemTitle('');
           setNewItemType('task');
+          setNewItemPriority('medium');
           toast.success('Item adicionado!');
         },
         onError: (err: Error) => toast.error('Erro: ' + err.message),
@@ -59,7 +75,8 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
       updates: {
         is_completed: !currentState,
         completed_at: !currentState ? new Date().toISOString() : null,
-      },
+        status: !currentState ? 'done' : 'todo',
+      } as any,
     });
   };
 
