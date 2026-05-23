@@ -111,7 +111,8 @@ export function useCreateTicket() {
         status: 'todo',
         attachment_url: input.attachmentUrl || null,
         project_id: input.projectId || null,
-        start_at: input.start_at || new Date().toISOString(),
+        // start_at fica vazio até admin confirmar (mover para fora de 'todo')
+        start_at: input.start_at || null,
         end_at: input.end_at || null,
         assignee_id: input.assignee_id || null,
       };
