@@ -157,6 +157,18 @@ export function useUpdateTicket() {
         payload.responded_at = new Date().toISOString();
         payload.responded_by = user?.id;
       }
+      // Auto-define start_at quando o admin "confirma" o ticket (sai de 'todo')
+      // e ainda não havia data de início
+      if (updates.status && updates.status !== 'todo' && updates.start_at === undefined) {
+        const { data: existing } = await supabase
+          .from('support_tickets' as any)
+          .select('start_at')
+          .eq('id', ticketId)
+          .maybeSingle();
+        if (existing && !(existing as any).start_at) {
+          payload.start_at = new Date().toISOString();
+        }
+      }
       const { data, error } = await supabase
         .from('support_tickets' as any)
         .update(payload)
