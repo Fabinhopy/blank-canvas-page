@@ -289,6 +289,7 @@ export type Database = {
           evolution_stage_id: string
           id: string
           is_completed: boolean
+          item_type: string
           order_index: number
           start_date: string | null
           title: string
@@ -302,6 +303,7 @@ export type Database = {
           evolution_stage_id: string
           id?: string
           is_completed?: boolean
+          item_type?: string
           order_index?: number
           start_date?: string | null
           title: string
@@ -315,6 +317,7 @@ export type Database = {
           evolution_stage_id?: string
           id?: string
           is_completed?: boolean
+          item_type?: string
           order_index?: number
           start_date?: string | null
           title?: string
@@ -601,6 +604,7 @@ export type Database = {
           end_date: string | null
           id: string
           is_completed: boolean
+          item_type: string
           order_index: number
           stage_id: string
           start_date: string | null
@@ -614,6 +618,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_completed?: boolean
+          item_type?: string
           order_index?: number
           stage_id: string
           start_date?: string | null
@@ -627,6 +632,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_completed?: boolean
+          item_type?: string
           order_index?: number
           stage_id?: string
           start_date?: string | null

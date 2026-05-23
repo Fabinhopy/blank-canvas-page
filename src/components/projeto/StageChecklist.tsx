@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { useProjectStageItems, useCreateStageItem, useUpdateStageItem, useDeleteStageItem, type StageItemType } from '@/hooks/useProjectStageItems';
+import { useProjectStageItems, useCreateStageItem, useUpdateStageItem, useDeleteStageItem, type StageItemType, type StageItemPriority } from '@/hooks/useProjectStageItems';
+import { useAdminUsers } from '@/hooks/useSupportTickets';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,12 @@ const TYPE_OPTIONS: { value: StageItemType; label: string }[] = [
 ];
 const TYPE_LABEL = Object.fromEntries(TYPE_OPTIONS.map(t => [t.value, t.label])) as Record<string, string>;
 
+const PRIORITY_OPTIONS: { value: StageItemPriority; label: string; cls: string }[] = [
+  { value: 'low',    label: '🟢 Baixa',  cls: 'bg-muted text-muted-foreground' },
+  { value: 'medium', label: '🟡 Média',  cls: 'bg-warning/10 text-warning' },
+  { value: 'high',   label: '🟠 Alta',   cls: 'bg-orange-500/10 text-orange-600 dark:text-orange-400' },
+];
+
 interface StageChecklistProps {
   stageId: string;
   projectId: string;
@@ -32,8 +39,10 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
   const createItem = useCreateStageItem();
   const updateItem = useUpdateStageItem();
   const deleteItem = useDeleteStageItem();
+  const { data: admins } = useAdminUsers();
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemType, setNewItemType] = useState<StageItemType>('task');
+  const [newItemPriority, setNewItemPriority] = useState<StageItemPriority>('medium');
   const [uploadingItemId, setUploadingItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
@@ -41,11 +50,18 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
   const handleAddItem = () => {
     if (!newItemTitle.trim()) return;
     createItem.mutate(
-      { stage_id: stageId, title: newItemTitle.trim(), item_type: newItemType, order_index: items?.length || 0 },
+      {
+        stage_id: stageId,
+        title: newItemTitle.trim(),
+        item_type: newItemType,
+        priority: newItemPriority,
+        order_index: items?.length || 0,
+      },
       {
         onSuccess: () => {
           setNewItemTitle('');
           setNewItemType('task');
+          setNewItemPriority('medium');
           toast.success('Item adicionado!');
         },
         onError: (err: Error) => toast.error('Erro: ' + err.message),
@@ -59,7 +75,8 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
       updates: {
         is_completed: !currentState,
         completed_at: !currentState ? new Date().toISOString() : null,
-      },
+        status: !currentState ? 'done' : 'todo',
+      } as any,
     });
   };
 
@@ -189,23 +206,43 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
                 {item.title}
               </span>
               {isAdmin ? (
-                <Select
-                  value={item.item_type || 'task'}
-                  onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { item_type: v as StageItemType } as any })}
-                >
-                  <SelectTrigger className="h-6 w-[130px] text-[11px] px-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TYPE_OPTIONS.map(o => (
-                      <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select
+                    value={item.item_type || 'task'}
+                    onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { item_type: v as StageItemType } as any })}
+                  >
+                    <SelectTrigger className="h-6 w-[130px] text-[11px] px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TYPE_OPTIONS.map(o => (
+                        <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={item.priority || 'medium'}
+                    onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { priority: v as StageItemPriority } as any })}
+                  >
+                    <SelectTrigger className="h-6 w-[100px] text-[11px] px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRIORITY_OPTIONS.map(o => (
+                        <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
               ) : (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
-                  {TYPE_LABEL[item.item_type] || 'Tarefa'}
-                </Badge>
+                <>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                    {TYPE_LABEL[item.item_type] || 'Tarefa'}
+                  </Badge>
+                  <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-5', PRIORITY_OPTIONS.find(p => p.value === item.priority)?.cls)}>
+                    {PRIORITY_OPTIONS.find(p => p.value === item.priority)?.label.replace(/^.+ /, '') || 'Média'}
+                  </Badge>
+                </>
               )}
               {item.completed_at && (
                 <span className="text-xs text-muted-foreground hidden group-hover:inline">
@@ -258,13 +295,31 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
                 {item.completed_at && (
                   <span className="text-success">✓ {format(new Date(item.completed_at), 'dd/MM/yy', { locale: ptBR })}</span>
                 )}
+                <label className="text-muted-foreground ml-2">Responsável:</label>
+                <Select
+                  value={item.assignee_id || 'none'}
+                  onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { assignee_id: v === 'none' ? null : v } as any })}
+                >
+                  <SelectTrigger className="h-6 w-[150px] text-[11px] px-2">
+                    <SelectValue placeholder="—" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-xs">Sem responsável</SelectItem>
+                    {admins?.map(a => (
+                      <SelectItem key={a.user_id} value={a.user_id} className="text-xs">{a.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             ) : (
-              (item.start_date || item.end_date) && (
+              (item.start_date || item.end_date || item.assignee_id) && (
                 <div className="ml-9 mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
                   {item.start_date && <span>Início: {format(new Date(item.start_date + 'T00:00:00'), 'dd/MM/yy')}</span>}
                   {item.end_date && <span>Prazo: {format(new Date(item.end_date + 'T00:00:00'), 'dd/MM/yy')}</span>}
                   {item.completed_at && <span className="text-success">Concluído: {format(new Date(item.completed_at), 'dd/MM/yy')}</span>}
+                  {item.assignee_id && (
+                    <span>Resp.: {admins?.find(a => a.user_id === item.assignee_id)?.full_name || '—'}</span>
+                  )}
                 </div>
               )
             )}
@@ -297,11 +352,21 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
             className="h-8 text-sm flex-1"
           />
           <Select value={newItemType} onValueChange={(v) => setNewItemType(v as StageItemType)}>
-            <SelectTrigger className="h-8 w-[140px] text-xs">
+            <SelectTrigger className="h-8 w-[130px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {TYPE_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={newItemPriority} onValueChange={(v) => setNewItemPriority(v as StageItemPriority)}>
+            <SelectTrigger className="h-8 w-[110px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITY_OPTIONS.map(o => (
                 <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
               ))}
             </SelectContent>

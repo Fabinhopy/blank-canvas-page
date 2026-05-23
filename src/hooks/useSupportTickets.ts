@@ -111,7 +111,8 @@ export function useCreateTicket() {
         status: 'todo',
         attachment_url: input.attachmentUrl || null,
         project_id: input.projectId || null,
-        start_at: input.start_at || new Date().toISOString(),
+        // start_at fica vazio até admin confirmar (mover para fora de 'todo')
+        start_at: input.start_at || null,
         end_at: input.end_at || null,
         assignee_id: input.assignee_id || null,
       };
@@ -155,6 +156,18 @@ export function useUpdateTicket() {
       if (updates.admin_response !== undefined && updates.admin_response) {
         payload.responded_at = new Date().toISOString();
         payload.responded_by = user?.id;
+      }
+      // Auto-define start_at quando o admin "confirma" o ticket (sai de 'todo')
+      // e ainda não havia data de início
+      if (updates.status && updates.status !== 'todo' && updates.start_at === undefined) {
+        const { data: existing } = await supabase
+          .from('support_tickets' as any)
+          .select('start_at')
+          .eq('id', ticketId)
+          .maybeSingle();
+        if (existing && !(existing as any).start_at) {
+          payload.start_at = new Date().toISOString();
+        }
       }
       const { data, error } = await supabase
         .from('support_tickets' as any)
