@@ -206,23 +206,43 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
                 {item.title}
               </span>
               {isAdmin ? (
-                <Select
-                  value={item.item_type || 'task'}
-                  onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { item_type: v as StageItemType } as any })}
-                >
-                  <SelectTrigger className="h-6 w-[130px] text-[11px] px-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TYPE_OPTIONS.map(o => (
-                      <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select
+                    value={item.item_type || 'task'}
+                    onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { item_type: v as StageItemType } as any })}
+                  >
+                    <SelectTrigger className="h-6 w-[130px] text-[11px] px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TYPE_OPTIONS.map(o => (
+                        <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={item.priority || 'medium'}
+                    onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { priority: v as StageItemPriority } as any })}
+                  >
+                    <SelectTrigger className="h-6 w-[100px] text-[11px] px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRIORITY_OPTIONS.map(o => (
+                        <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
               ) : (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
-                  {TYPE_LABEL[item.item_type] || 'Tarefa'}
-                </Badge>
+                <>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                    {TYPE_LABEL[item.item_type] || 'Tarefa'}
+                  </Badge>
+                  <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-5', PRIORITY_OPTIONS.find(p => p.value === item.priority)?.cls)}>
+                    {PRIORITY_OPTIONS.find(p => p.value === item.priority)?.label.replace(/^.+ /, '') || 'Média'}
+                  </Badge>
+                </>
               )}
               {item.completed_at && (
                 <span className="text-xs text-muted-foreground hidden group-hover:inline">
@@ -275,13 +295,31 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
                 {item.completed_at && (
                   <span className="text-success">✓ {format(new Date(item.completed_at), 'dd/MM/yy', { locale: ptBR })}</span>
                 )}
+                <label className="text-muted-foreground ml-2">Responsável:</label>
+                <Select
+                  value={item.assignee_id || 'none'}
+                  onValueChange={(v) => updateItem.mutate({ id: item.id, updates: { assignee_id: v === 'none' ? null : v } as any })}
+                >
+                  <SelectTrigger className="h-6 w-[150px] text-[11px] px-2">
+                    <SelectValue placeholder="—" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-xs">Sem responsável</SelectItem>
+                    {admins?.map(a => (
+                      <SelectItem key={a.user_id} value={a.user_id} className="text-xs">{a.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             ) : (
-              (item.start_date || item.end_date) && (
+              (item.start_date || item.end_date || item.assignee_id) && (
                 <div className="ml-9 mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
                   {item.start_date && <span>Início: {format(new Date(item.start_date + 'T00:00:00'), 'dd/MM/yy')}</span>}
                   {item.end_date && <span>Prazo: {format(new Date(item.end_date + 'T00:00:00'), 'dd/MM/yy')}</span>}
                   {item.completed_at && <span className="text-success">Concluído: {format(new Date(item.completed_at), 'dd/MM/yy')}</span>}
+                  {item.assignee_id && (
+                    <span>Resp.: {admins?.find(a => a.user_id === item.assignee_id)?.full_name || '—'}</span>
+                  )}
                 </div>
               )
             )}
