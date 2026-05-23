@@ -352,11 +352,21 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
             className="h-8 text-sm flex-1"
           />
           <Select value={newItemType} onValueChange={(v) => setNewItemType(v as StageItemType)}>
-            <SelectTrigger className="h-8 w-[140px] text-xs">
+            <SelectTrigger className="h-8 w-[130px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {TYPE_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={newItemPriority} onValueChange={(v) => setNewItemPriority(v as StageItemPriority)}>
+            <SelectTrigger className="h-8 w-[110px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITY_OPTIONS.map(o => (
                 <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
               ))}
             </SelectContent>
