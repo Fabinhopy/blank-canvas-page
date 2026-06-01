@@ -75,6 +75,19 @@ export default function Chat() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleStartVideoCall = () => {
+    if (!selectedConversationId || !user) return;
+    const room = `smartest-${selectedConversationId.replace(/-/g, '').slice(0, 12)}-${Date.now().toString(36)}`;
+    const url = `https://meet.jit.si/${room}`;
+    sendMessage.mutate({
+      conversationId: selectedConversationId,
+      content: `📹 Videochamada iniciada — entre pela sala: ${url}`,
+      senderId: user.id,
+    });
+    window.open(url, '_blank', 'noopener');
+    toast.success('Sala de vídeo criada e link enviado no chat');
+  };
+
   const handleAttachmentDownload = async (path: string, name: string) => {
     const { data, error } = await supabase.storage.from('chat-attachments').createSignedUrl(path, 60);
     if (error || !data) { toast.error('Erro ao baixar'); return; }
@@ -194,14 +207,17 @@ export default function Chat() {
                     <AvatarImage src={getAvatarUrl(selectedConversation.profile?.avatar_url) || undefined} className="object-cover" />
                     <AvatarFallback className="text-xs">{getInitials(selectedConversation.profile?.full_name)}</AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">
                       {isAdmin ? selectedConversation.profile?.full_name || 'Cliente' : 'Suporte Smartest'}
                     </p>
                     {selectedConversation.project?.name && (
-                      <p className="text-xs text-muted-foreground">{selectedConversation.project.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{selectedConversation.project.name}</p>
                     )}
                   </div>
+                  <Button variant="outline" size="sm" className="gap-2" onClick={handleStartVideoCall} title="Iniciar videochamada (Jitsi)">
+                    <VideoIcon className="h-4 w-4" /> Videochamada
+                  </Button>
                 </div>
               </CardHeader>
 
@@ -224,7 +240,23 @@ export default function Chat() {
                           }`}>
                             {msg.attachment_url && <ChatAttachment msg={msg} isMe={isMe} onDownload={handleAttachmentDownload} />}
                             {msg.content && !msg.content.startsWith('📎 ') && (
-                              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                              <p className="text-sm whitespace-pre-wrap break-words">
+                                {msg.content.split(/(https?:\/\/\S+)/g).map((part, i) =>
+                                  /^https?:\/\//.test(part) ? (
+                                    <a
+                                      key={i}
+                                      href={part}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`underline ${isMe ? 'text-primary-foreground' : 'text-primary'}`}
+                                    >
+                                      {part}
+                                    </a>
+                                  ) : (
+                                    <span key={i}>{part}</span>
+                                  )
+                                )}
+                              </p>
                             )}
                             <p className={`text-[10px] mt-1 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                               {format(new Date(msg.created_at), 'HH:mm', { locale: ptBR })}

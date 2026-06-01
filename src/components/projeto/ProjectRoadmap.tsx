@@ -41,7 +41,16 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
   }, [milestones, currentMonth]);
 
   const getMilestonesForDay = (day: Date) => {
-    return milestones.filter(m => isSameDay(new Date(m.due_date + 'T00:00:00'), day));
+    const entries: Array<{ m: ProjectMilestone; kind: 'start' | 'end' }> = [];
+    milestones.forEach(m => {
+      if (m.start_date && isSameDay(new Date(m.start_date + 'T00:00:00'), day)) {
+        entries.push({ m, kind: 'start' });
+      }
+      if (isSameDay(new Date(m.due_date + 'T00:00:00'), day)) {
+        entries.push({ m, kind: 'end' });
+      }
+    });
+    return entries;
   };
 
   const today = new Date();
@@ -132,15 +141,17 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
                     {format(day, 'd')}
                   </span>
                   <div className="space-y-0.5 mt-0.5">
-                    {dayMilestones.map(m => {
+                    {dayMilestones.map(({ m, kind }) => {
                       const cfg = typeConfig[m.milestone_type as keyof typeof typeConfig] || typeConfig.entrega;
+                      const prefix = kind === 'start' ? '▶ Início: ' : '■ Entrega: ';
+                      const ringCls = kind === 'start' ? 'border-dashed' : '';
                       return (
                         <div
-                          key={m.id}
-                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${cfg.color} ${m.status === 'completed' ? 'line-through opacity-60' : ''} ${m.status === 'cancelled' ? 'line-through opacity-40' : ''}`}
-                          title={`${m.title} — ${statusLabels[m.status]}`}
+                          key={m.id + kind}
+                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${cfg.color} ${ringCls} ${m.status === 'completed' ? 'line-through opacity-60' : ''} ${m.status === 'cancelled' ? 'line-through opacity-40' : ''}`}
+                          title={`${prefix}${m.title} — ${statusLabels[m.status]}`}
                         >
-                          {m.title}
+                          {prefix}{m.title}
                         </div>
                       );
                     })}
@@ -186,7 +197,10 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
                           {m.description && <p className="text-xs text-muted-foreground truncate">{m.description}</p>}
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-xs font-medium">{format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                          {m.start_date && (
+                            <p className="text-[10px] text-muted-foreground">Início: {format(new Date(m.start_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                          )}
+                          <p className="text-xs font-medium">Entrega: {format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
                           <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
                         </div>
                       </div>

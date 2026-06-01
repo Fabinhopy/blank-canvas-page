@@ -8,6 +8,7 @@ export interface ProjectMilestone {
   description: string | null;
   milestone_type: 'entrega' | 'reuniao' | 'marco';
   due_date: string;
+  start_date: string | null;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   recurrence: string | null;
   created_at: string;
@@ -34,7 +35,7 @@ export function useProjectMilestones(projectId: string | undefined) {
 export function useCreateMilestone() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (milestone: Omit<ProjectMilestone, 'id' | 'created_at' | 'updated_at' | 'recurrence'> & { recurrence?: string | null }) => {
+    mutationFn: async (milestone: Omit<ProjectMilestone, 'id' | 'created_at' | 'updated_at' | 'recurrence' | 'start_date'> & { recurrence?: string | null; start_date?: string | null }) => {
       const { error } = await (supabase as any)
         .from('project_milestones')
         .insert(milestone);
