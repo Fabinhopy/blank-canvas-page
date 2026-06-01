@@ -282,8 +282,10 @@ export type Database = {
       }
       evolution_stage_items: {
         Row: {
+          assignee_id: string | null
           completed_at: string | null
           created_at: string
+          description: string | null
           document_id: string | null
           end_date: string | null
           evolution_stage_id: string
@@ -291,13 +293,17 @@ export type Database = {
           is_completed: boolean
           item_type: string
           order_index: number
+          priority: string
           start_date: string | null
+          status: string
           title: string
           updated_at: string
         }
         Insert: {
+          assignee_id?: string | null
           completed_at?: string | null
           created_at?: string
+          description?: string | null
           document_id?: string | null
           end_date?: string | null
           evolution_stage_id: string
@@ -305,13 +311,17 @@ export type Database = {
           is_completed?: boolean
           item_type?: string
           order_index?: number
+          priority?: string
           start_date?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
         Update: {
+          assignee_id?: string | null
           completed_at?: string | null
           created_at?: string
+          description?: string | null
           document_id?: string | null
           end_date?: string | null
           evolution_stage_id?: string
@@ -319,7 +329,9 @@ export type Database = {
           is_completed?: boolean
           item_type?: string
           order_index?: number
+          priority?: string
           start_date?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }
@@ -598,44 +610,56 @@ export type Database = {
       }
       project_stage_items: {
         Row: {
+          assignee_id: string | null
           completed_at: string | null
           created_at: string
+          description: string | null
           document_id: string | null
           end_date: string | null
           id: string
           is_completed: boolean
           item_type: string
           order_index: number
+          priority: string
           stage_id: string
           start_date: string | null
+          status: string
           title: string
           updated_at: string
         }
         Insert: {
+          assignee_id?: string | null
           completed_at?: string | null
           created_at?: string
+          description?: string | null
           document_id?: string | null
           end_date?: string | null
           id?: string
           is_completed?: boolean
           item_type?: string
           order_index?: number
+          priority?: string
           stage_id: string
           start_date?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
         Update: {
+          assignee_id?: string | null
           completed_at?: string | null
           created_at?: string
+          description?: string | null
           document_id?: string | null
           end_date?: string | null
           id?: string
           is_completed?: boolean
           item_type?: string
           order_index?: number
+          priority?: string
           stage_id?: string
           start_date?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }
