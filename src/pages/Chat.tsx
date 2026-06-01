@@ -75,6 +75,19 @@ export default function Chat() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleStartVideoCall = () => {
+    if (!selectedConversationId || !user) return;
+    const room = `smartest-${selectedConversationId.replace(/-/g, '').slice(0, 12)}-${Date.now().toString(36)}`;
+    const url = `https://meet.jit.si/${room}`;
+    sendMessage.mutate({
+      conversationId: selectedConversationId,
+      content: `📹 Videochamada iniciada — entre pela sala: ${url}`,
+      senderId: user.id,
+    });
+    window.open(url, '_blank', 'noopener');
+    toast.success('Sala de vídeo criada e link enviado no chat');
+  };
+
   const handleAttachmentDownload = async (path: string, name: string) => {
     const { data, error } = await supabase.storage.from('chat-attachments').createSignedUrl(path, 60);
     if (error || !data) { toast.error('Erro ao baixar'); return; }
