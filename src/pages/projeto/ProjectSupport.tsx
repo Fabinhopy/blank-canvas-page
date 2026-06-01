@@ -214,14 +214,18 @@ export default function ProjectSupport() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground">Início</label>
-                      <Input type="datetime-local" value={f.start_at} onChange={e => setF({ ...f, start_at: e.target.value })} />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground">Prazo final</label>
-                      <Input type="datetime-local" value={f.end_at} onChange={e => setF({ ...f, end_at: e.target.value })} />
-                    </div>
+                    {isAdmin && (
+                      <>
+                        <div>
+                          <label className="text-xs text-muted-foreground">Início</label>
+                          <Input type="datetime-local" value={f.start_at} onChange={e => setF({ ...f, start_at: e.target.value })} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">Prazo final</label>
+                          <Input type="datetime-local" value={f.end_at} onChange={e => setF({ ...f, end_at: e.target.value })} />
+                        </div>
+                      </>
+                    )}
                   </div>
                   {isAdmin && (
                     <div>
@@ -234,6 +238,11 @@ export default function ProjectSupport() {
                         </SelectContent>
                       </Select>
                     </div>
+                  )}
+                  {!isAdmin && (
+                    <p className="text-xs text-muted-foreground">
+                      O horário desta solicitação será registrado automaticamente. A equipe irá confirmar tipo, prioridade e definir o prazo de atendimento.
+                    </p>
                   )}
                 </div>
                 <DialogFooter>

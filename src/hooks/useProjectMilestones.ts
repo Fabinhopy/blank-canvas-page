@@ -8,6 +8,7 @@ export interface ProjectMilestone {
   description: string | null;
   milestone_type: 'entrega' | 'reuniao' | 'marco';
   due_date: string;
+  start_date: string | null;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   recurrence: string | null;
   created_at: string;
