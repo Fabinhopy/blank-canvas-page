@@ -85,37 +85,37 @@ const App = () => (
             
             {/* Admin routes */}
             <Route path="/admin/empresas" element={
-              <ProtectedRoute><AdminClients /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminClients /></ProtectedRoute>
             } />
             <Route path="/admin/empresas/:clientId/usuarios" element={
-              <ProtectedRoute><AdminClientUsers /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminClientUsers /></ProtectedRoute>
             } />
             <Route path="/admin/empresas/:clientId/projetos" element={
-              <ProtectedRoute><AdminClientProjects /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminClientProjects /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/documentos" element={
-              <ProtectedRoute><AdminProjectDocuments /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectDocuments /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/treinamentos" element={
-              <ProtectedRoute><AdminProjectTrainings /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectTrainings /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/etapas" element={
-              <ProtectedRoute><AdminProjectStages /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectStages /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/links" element={
-              <ProtectedRoute><AdminProjectLinks /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectLinks /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/agenda" element={
-              <ProtectedRoute><AdminProjectMilestones /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectMilestones /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/comunicados" element={
-              <ProtectedRoute><AdminProjectAnnouncements /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectAnnouncements /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/versoes" element={
-              <ProtectedRoute><AdminProjectVersions /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminProjectVersions /></ProtectedRoute>
             } />
             <Route path="/admin/treinamentos" element={
-              <ProtectedRoute><AdminGlobalTrainings /></ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}><AdminGlobalTrainings /></ProtectedRoute>
             } />
             
             {/* Global Trainings */}
