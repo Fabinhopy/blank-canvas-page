@@ -66,6 +66,7 @@ const statusDisplay: Record<string, { label: string; color: string }> = {
 
 export default function GlobalAgenda() {
   const { data: milestones, isLoading } = useAllMilestones();
+  const { data: events } = useAllAgendaEvents();
   const { data: projects } = useProjects();
   const { isAdmin } = useAuth();
   const createMutation = useCreateGlobalMilestone();
