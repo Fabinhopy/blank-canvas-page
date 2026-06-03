@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProject } from '@/hooks/useProjects';
-import { useProjectMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/hooks/useProjectMilestones';
+import { useProjectMilestones, useCreateMilestone } from '@/hooks/useProjectMilestones';
+import { useProjectAgendaEvents } from '@/hooks/useAgendaEvents';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProjectRoadmap } from '@/components/projeto/ProjectRoadmap';
@@ -19,7 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Plus, CalendarIcon, Loader2 } from 'lucide-react';
-import { format, isSameDay, isPast } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
@@ -48,37 +49,33 @@ export default function ProjectAgenda() {
   const { id } = useParams<{ id: string }>();
   const { data: project } = useProject(id);
   const { data: milestones, isLoading } = useProjectMilestones(id);
+  const { data: events } = useProjectAgendaEvents(id);
   const { isAdmin } = useAuth();
   const createMutation = useCreateMilestone();
-  const updateMutation = useUpdateMilestone();
-  const deleteMutation = useDeleteMilestone();
 
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '', description: '', milestone_type: 'entrega',
-    start_date: undefined as Date | undefined,
     due_date: undefined as Date | undefined, recurrence: 'none',
   });
 
   const handleClose = () => {
     setIsOpen(false);
-    setFormData({ title: '', description: '', milestone_type: 'entrega', start_date: undefined, due_date: undefined, recurrence: 'none' });
+    setFormData({ title: '', description: '', milestone_type: 'entrega', due_date: undefined, recurrence: 'none' });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.due_date) {
-      toast.error('Título e data de entrega são obrigatórios');
+      toast.error('Título e data são obrigatórios');
       return;
     }
     const dueDateStr = format(formData.due_date, 'yyyy-MM-dd');
-    const startDateStr = formData.start_date ? format(formData.start_date, 'yyyy-MM-dd') : null;
     createMutation.mutate({
       title: formData.title,
       description: formData.description || null,
       milestone_type: formData.milestone_type as any,
       due_date: dueDateStr,
-      start_date: startDateStr,
       status: computeStatus(dueDateStr) as any,
       project_id: id!,
       recurrence: formData.recurrence === 'none' ? null : formData.recurrence,
@@ -88,7 +85,6 @@ export default function ProjectAgenda() {
     });
   };
 
-  // Add auto-status to milestones for display
   const milestonesWithAutoStatus = useMemo(() => {
     return (milestones || []).map(m => ({
       ...m,
@@ -110,24 +106,27 @@ export default function ProjectAgenda() {
               {project?.name || 'Carregando...'}
             </div>
             <h1 className="text-2xl font-bold text-foreground">Agenda de Entregas</h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Exibe compromissos do projeto e as datas de início/término de tarefas dos progressos e evoluções.
+            </p>
           </div>
           {isAdmin && (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => setFormData({ title: '', description: '', milestone_type: 'entrega', start_date: undefined, due_date: undefined, recurrence: 'none' })}>
+                <Button onClick={() => setFormData({ title: '', description: '', milestone_type: 'entrega', due_date: undefined, recurrence: 'none' })}>
                   <Plus className="h-4 w-4 mr-2" /> Novo Compromisso
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Novo Compromisso</DialogTitle>
-                  <DialogDescription>Adicione um novo marco, entrega ou reunião. Informe a data de início e de entrega para acompanhar o período na agenda.</DialogDescription>
+                  <DialogDescription>Adicione um marco, entrega ou reunião na agenda.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
                       <Label>Título *</Label>
-                      <Input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Ex: Entrega do módulo financeiro" />
+                      <Input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Ex: Reunião de alinhamento" />
                     </div>
                     <div className="space-y-2">
                       <Label>Descrição</Label>
@@ -153,35 +152,19 @@ export default function ProjectAgenda() {
                         </Select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Data de início</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.start_date && "text-muted-foreground")}>
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.start_date ? format(formData.start_date, "dd/MM/yyyy", { locale: ptBR }) : 'Opcional'}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={formData.start_date} onSelect={d => setFormData({ ...formData, start_date: d })} initialFocus className="p-3 pointer-events-auto" />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Data de entrega *</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.due_date && "text-muted-foreground")}>
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.due_date ? format(formData.due_date, "dd/MM/yyyy", { locale: ptBR }) : 'Selecione'}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={formData.due_date} onSelect={d => setFormData({ ...formData, due_date: d })} initialFocus className="p-3 pointer-events-auto" />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
+                    <div className="space-y-2">
+                      <Label>Data *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.due_date && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formData.due_date ? format(formData.due_date, "dd/MM/yyyy", { locale: ptBR }) : 'Selecione'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={formData.due_date} onSelect={d => setFormData({ ...formData, due_date: d })} initialFocus className="p-3 pointer-events-auto" />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                   <DialogFooter>
@@ -197,7 +180,7 @@ export default function ProjectAgenda() {
           )}
         </div>
 
-        <ProjectRoadmap milestones={milestonesWithAutoStatus} isLoading={isLoading} />
+        <ProjectRoadmap milestones={milestonesWithAutoStatus} isLoading={isLoading} events={events || []} />
       </div>
     </AppLayout>
   );
