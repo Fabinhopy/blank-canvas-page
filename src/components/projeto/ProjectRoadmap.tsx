@@ -130,6 +130,7 @@ export function ProjectRoadmap({ milestones, isLoading, events = [], showProject
             ))}
             {days.map(day => {
               const dayMilestones = getMilestonesForDay(day);
+              const dayEvents = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
               return (
                 <div
@@ -140,17 +141,31 @@ export function ProjectRoadmap({ milestones, isLoading, events = [], showProject
                     {format(day, 'd')}
                   </span>
                   <div className="space-y-0.5 mt-0.5">
-                    {dayMilestones.map(({ m, kind }) => {
+                    {dayMilestones.map(({ m }) => {
                       const cfg = typeConfig[m.milestone_type as keyof typeof typeConfig] || typeConfig.entrega;
-                      const prefix = kind === 'start' ? '▶ Início: ' : '■ Entrega: ';
-                      const ringCls = kind === 'start' ? 'border-dashed' : '';
                       return (
                         <div
-                          key={m.id + kind}
-                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${cfg.color} ${ringCls} ${m.status === 'completed' ? 'line-through opacity-60' : ''} ${m.status === 'cancelled' ? 'line-through opacity-40' : ''}`}
-                          title={`${prefix}${m.title} — ${statusLabels[m.status]}`}
+                          key={m.id}
+                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${cfg.color} ${m.status === 'completed' ? 'line-through opacity-60' : ''} ${m.status === 'cancelled' ? 'line-through opacity-40' : ''}`}
+                          title={`${m.title} — ${statusLabels[m.status]}`}
                         >
-                          {prefix}{m.title}
+                          {m.title}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.map(ev => {
+                      const prefix = ev.kind === 'start' ? '▶ ' : '■ ';
+                      const ringCls = ev.kind === 'start' ? 'border-dashed' : '';
+                      const colorCls = ev.source === 'evolution'
+                        ? 'bg-success/10 text-success border-success/20'
+                        : 'bg-accent/40 text-accent-foreground border-accent';
+                      return (
+                        <div
+                          key={ev.id + ev.kind}
+                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${colorCls} ${ringCls} ${ev.is_completed ? 'line-through opacity-60' : ''}`}
+                          title={`${prefix}${ev.stage_name}: ${ev.title}${showProjectName ? ` — ${ev.project_name}` : ''}`}
+                        >
+                          {prefix}{ev.title}
                         </div>
                       );
                     })}
