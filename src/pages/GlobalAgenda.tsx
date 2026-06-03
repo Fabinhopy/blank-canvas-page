@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAllMilestones, useCreateGlobalMilestone, useUpdateGlobalMilestone, useDeleteGlobalMilestone } from '@/hooks/useAllMilestones';
+import { useAllAgendaEvents } from '@/hooks/useAgendaEvents';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
