@@ -144,6 +144,10 @@ export default function GlobalAgenda() {
     return milestonesWithAutoStatus.filter(m => isSameDay(new Date(m.due_date + 'T00:00:00'), day));
   };
 
+  const getEventsForDay = (day: Date) => {
+    return (events || []).filter(ev => isSameDay(new Date(ev.date + 'T00:00:00'), day));
+  };
+
   const upcoming = milestonesWithAutoStatus
     .filter(m => m.autoStatus !== 'completed' && m.autoStatus !== 'cancelled')
     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
