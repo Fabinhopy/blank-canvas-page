@@ -8,10 +8,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProjectMilestone } from '@/hooks/useProjectMilestones';
+import type { AgendaEvent } from '@/hooks/useAgendaEvents';
 
 interface ProjectRoadmapProps {
   milestones: ProjectMilestone[];
   isLoading: boolean;
+  events?: AgendaEvent[];
+  showProjectName?: boolean;
 }
 
 const typeConfig = {
