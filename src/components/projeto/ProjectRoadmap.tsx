@@ -8,10 +8,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProjectMilestone } from '@/hooks/useProjectMilestones';
+import type { AgendaEvent } from '@/hooks/useAgendaEvents';
 
 interface ProjectRoadmapProps {
   milestones: ProjectMilestone[];
   isLoading: boolean;
+  events?: AgendaEvent[];
+  showProjectName?: boolean;
 }
 
 const typeConfig = {
@@ -27,7 +30,7 @@ const statusLabels: Record<string, string> = {
   cancelled: 'Cancelado',
 };
 
-export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
+export function ProjectRoadmap({ milestones, isLoading, events = [], showProjectName = false }: ProjectRoadmapProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
@@ -36,22 +39,18 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  const milestonesInMonth = useMemo(() => {
-    return milestones.filter(m => isSameMonth(new Date(m.due_date), currentMonth));
-  }, [milestones, currentMonth]);
-
   const getMilestonesForDay = (day: Date) => {
-    const entries: Array<{ m: ProjectMilestone; kind: 'start' | 'end' }> = [];
+    const entries: Array<{ m: ProjectMilestone; kind: 'end' }> = [];
     milestones.forEach(m => {
-      if (m.start_date && isSameDay(new Date(m.start_date + 'T00:00:00'), day)) {
-        entries.push({ m, kind: 'start' });
-      }
       if (isSameDay(new Date(m.due_date + 'T00:00:00'), day)) {
         entries.push({ m, kind: 'end' });
       }
     });
     return entries;
   };
+
+  const getEventsForDay = (day: Date) =>
+    events.filter(ev => isSameDay(new Date(ev.date + 'T00:00:00'), day));
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -131,6 +130,7 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
             ))}
             {days.map(day => {
               const dayMilestones = getMilestonesForDay(day);
+              const dayEvents = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
               return (
                 <div
@@ -141,17 +141,31 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
                     {format(day, 'd')}
                   </span>
                   <div className="space-y-0.5 mt-0.5">
-                    {dayMilestones.map(({ m, kind }) => {
+                    {dayMilestones.map(({ m }) => {
                       const cfg = typeConfig[m.milestone_type as keyof typeof typeConfig] || typeConfig.entrega;
-                      const prefix = kind === 'start' ? '▶ Início: ' : '■ Entrega: ';
-                      const ringCls = kind === 'start' ? 'border-dashed' : '';
                       return (
                         <div
-                          key={m.id + kind}
-                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${cfg.color} ${ringCls} ${m.status === 'completed' ? 'line-through opacity-60' : ''} ${m.status === 'cancelled' ? 'line-through opacity-40' : ''}`}
-                          title={`${prefix}${m.title} — ${statusLabels[m.status]}`}
+                          key={m.id}
+                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${cfg.color} ${m.status === 'completed' ? 'line-through opacity-60' : ''} ${m.status === 'cancelled' ? 'line-through opacity-40' : ''}`}
+                          title={`${m.title} — ${statusLabels[m.status]}`}
                         >
-                          {prefix}{m.title}
+                          {m.title}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.map(ev => {
+                      const prefix = ev.kind === 'start' ? '▶ ' : '■ ';
+                      const ringCls = ev.kind === 'start' ? 'border-dashed' : '';
+                      const colorCls = ev.source === 'evolution'
+                        ? 'bg-success/10 text-success border-success/20'
+                        : 'bg-accent/40 text-accent-foreground border-accent';
+                      return (
+                        <div
+                          key={ev.id + ev.kind}
+                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${colorCls} ${ringCls} ${ev.is_completed ? 'line-through opacity-60' : ''}`}
+                          title={`${prefix}${ev.stage_name}: ${ev.title}${showProjectName ? ` — ${ev.project_name}` : ''}`}
+                        >
+                          {prefix}{ev.title}
                         </div>
                       );
                     })}
@@ -197,10 +211,7 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
                           {m.description && <p className="text-xs text-muted-foreground truncate">{m.description}</p>}
                         </div>
                         <div className="text-right shrink-0">
-                          {m.start_date && (
-                            <p className="text-[10px] text-muted-foreground">Início: {format(new Date(m.start_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
-                          )}
-                          <p className="text-xs font-medium">Entrega: {format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                          <p className="text-xs font-medium">{format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
                           <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
                         </div>
                       </div>
