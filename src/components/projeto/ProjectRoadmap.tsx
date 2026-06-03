@@ -30,7 +30,7 @@ const statusLabels: Record<string, string> = {
   cancelled: 'Cancelado',
 };
 
-export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
+export function ProjectRoadmap({ milestones, isLoading, events = [], showProjectName = false }: ProjectRoadmapProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
@@ -39,22 +39,18 @@ export function ProjectRoadmap({ milestones, isLoading }: ProjectRoadmapProps) {
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  const milestonesInMonth = useMemo(() => {
-    return milestones.filter(m => isSameMonth(new Date(m.due_date), currentMonth));
-  }, [milestones, currentMonth]);
-
   const getMilestonesForDay = (day: Date) => {
-    const entries: Array<{ m: ProjectMilestone; kind: 'start' | 'end' }> = [];
+    const entries: Array<{ m: ProjectMilestone; kind: 'end' }> = [];
     milestones.forEach(m => {
-      if (m.start_date && isSameDay(new Date(m.start_date + 'T00:00:00'), day)) {
-        entries.push({ m, kind: 'start' });
-      }
       if (isSameDay(new Date(m.due_date + 'T00:00:00'), day)) {
         entries.push({ m, kind: 'end' });
       }
     });
     return entries;
   };
+
+  const getEventsForDay = (day: Date) =>
+    events.filter(ev => isSameDay(new Date(ev.date + 'T00:00:00'), day));
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
