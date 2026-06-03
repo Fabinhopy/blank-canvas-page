@@ -282,6 +282,7 @@ export default function GlobalAgenda() {
                   ))}
                   {days.map(day => {
                     const dayMilestones = getMilestonesForDay(day);
+                    const dayEvents = getEventsForDay(day);
                     const today = isSameDay(day, new Date());
                     return (
                       <div key={day.toISOString()} className={`bg-card min-h-[80px] p-1 ${today ? 'ring-2 ring-primary ring-inset' : ''}`}>
@@ -299,6 +300,22 @@ export default function GlobalAgenda() {
                                 onClick={() => isAdmin && handleEdit(m)}
                               >
                                 {m.title}
+                              </div>
+                            );
+                          })}
+                          {dayEvents.map(ev => {
+                            const prefix = ev.kind === 'start' ? '▶ ' : '■ ';
+                            const ringCls = ev.kind === 'start' ? 'border-dashed' : '';
+                            const colorCls = ev.source === 'evolution'
+                              ? 'bg-success/10 text-success border-success/20'
+                              : 'bg-accent/40 text-accent-foreground border-accent';
+                            return (
+                              <div
+                                key={ev.id + ev.kind}
+                                className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${colorCls} ${ringCls} ${ev.is_completed ? 'line-through opacity-60' : ''}`}
+                                title={`${prefix}${ev.stage_name}: ${ev.title} — ${ev.project_name}`}
+                              >
+                                {prefix}{ev.title}
                               </div>
                             );
                           })}
