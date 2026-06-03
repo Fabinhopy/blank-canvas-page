@@ -211,10 +211,7 @@ export function ProjectRoadmap({ milestones, isLoading, events = [], showProject
                           {m.description && <p className="text-xs text-muted-foreground truncate">{m.description}</p>}
                         </div>
                         <div className="text-right shrink-0">
-                          {m.start_date && (
-                            <p className="text-[10px] text-muted-foreground">Início: {format(new Date(m.start_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
-                          )}
-                          <p className="text-xs font-medium">Entrega: {format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
+                          <p className="text-xs font-medium">{format(new Date(m.due_date + 'T00:00:00'), 'dd/MM/yyyy')}</p>
                           <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
                         </div>
                       </div>
