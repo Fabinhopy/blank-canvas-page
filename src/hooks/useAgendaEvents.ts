@@ -7,77 +7,79 @@ export interface AgendaEvent {
   date: string; // yyyy-mm-dd
   kind: 'start' | 'end';
   source: 'progress' | 'evolution';
-  item_type: string;
+  item_type: string; // kept for back-compat with UI
   stage_name: string;
   project_id: string;
   project_name: string;
   is_completed: boolean;
 }
 
-function buildEvents(
-  rows: any[],
-  source: 'progress' | 'evolution',
-  stageKey: string,
-): AgendaEvent[] {
-  const out: AgendaEvent[] = [];
-  for (const it of rows || []) {
-    if (it.item_type === 'support') continue;
-    const stage = it[stageKey];
-    if (!stage) continue;
-    // For evolution: stage -> project_evolutions -> projects
-    const projectInfo =
-      source === 'evolution'
-        ? stage?.project_evolutions?.projects
-        : stage?.projects;
-    const projectId =
-      source === 'evolution'
-        ? stage?.project_evolutions?.project_id
-        : stage?.project_id;
-    if (!projectId) continue;
-    const base = {
-      id: it.id,
-      title: it.title as string,
-      source,
-      item_type: it.item_type as string,
-      stage_name: stage.stage_name as string,
-      project_id: projectId as string,
-      project_name: (projectInfo?.name as string) || 'Projeto',
-      is_completed: !!it.is_completed,
-    };
-    if (it.start_date) {
-      out.push({ ...base, date: it.start_date, kind: 'start' });
-    }
-    if (it.end_date) {
-      out.push({ ...base, date: it.end_date, kind: 'end' });
-    }
-  }
-  return out;
+const MAIN_STAGES = ['Levantamento', 'Modelagem', 'Desenvolvimento', 'Homologação', 'Produção'];
+
+function toDateOnly(ts: string | null): string | null {
+  if (!ts) return null;
+  // started_at/completed_at are timestamps; take YYYY-MM-DD
+  return ts.slice(0, 10);
 }
 
 async function fetchProgressEvents(projectId?: string): Promise<AgendaEvent[]> {
   let q = (supabase as any)
-    .from('project_stage_items')
-    .select(
-      'id, title, item_type, is_completed, start_date, end_date, project_stages!inner(stage_name, project_id, projects(name))'
-    )
-    .or('start_date.not.is.null,end_date.not.is.null');
-  if (projectId) q = q.eq('project_stages.project_id', projectId);
+    .from('project_stages')
+    .select('id, stage_name, started_at, completed_at, status, project_id, projects(name)')
+    .in('stage_name', MAIN_STAGES);
+  if (projectId) q = q.eq('project_id', projectId);
   const { data, error } = await q;
   if (error) throw error;
-  return buildEvents(data as any[], 'progress', 'project_stages');
+  const out: AgendaEvent[] = [];
+  for (const s of (data as any[]) || []) {
+    const base = {
+      id: s.id as string,
+      title: s.stage_name as string,
+      source: 'progress' as const,
+      item_type: 'stage',
+      stage_name: s.stage_name as string,
+      project_id: s.project_id as string,
+      project_name: (s.projects?.name as string) || 'Projeto',
+      is_completed: s.status === 'completed',
+    };
+    const start = toDateOnly(s.started_at);
+    const end = toDateOnly(s.completed_at);
+    if (start) out.push({ ...base, date: start, kind: 'start' });
+    if (end) out.push({ ...base, date: end, kind: 'end' });
+  }
+  return out;
 }
 
 async function fetchEvolutionEvents(projectId?: string): Promise<AgendaEvent[]> {
   let q = (supabase as any)
-    .from('evolution_stage_items')
+    .from('evolution_stages')
     .select(
-      'id, title, item_type, is_completed, start_date, end_date, evolution_stages!inner(stage_name, project_evolutions!inner(project_id, projects(name)))'
+      'id, stage_name, started_at, completed_at, status, project_evolutions!inner(id, title, project_id, projects(name))'
     )
-    .or('start_date.not.is.null,end_date.not.is.null');
-  if (projectId) q = q.eq('evolution_stages.project_evolutions.project_id', projectId);
+    .in('stage_name', MAIN_STAGES);
+  if (projectId) q = q.eq('project_evolutions.project_id', projectId);
   const { data, error } = await q;
   if (error) throw error;
-  return buildEvents(data as any[], 'evolution', 'evolution_stages');
+  const out: AgendaEvent[] = [];
+  for (const s of (data as any[]) || []) {
+    const evo = s.project_evolutions;
+    if (!evo?.project_id) continue;
+    const base = {
+      id: s.id as string,
+      title: `${evo.title} — ${s.stage_name}`,
+      source: 'evolution' as const,
+      item_type: 'stage',
+      stage_name: s.stage_name as string,
+      project_id: evo.project_id as string,
+      project_name: (evo.projects?.name as string) || 'Projeto',
+      is_completed: s.status === 'completed',
+    };
+    const start = toDateOnly(s.started_at);
+    const end = toDateOnly(s.completed_at);
+    if (start) out.push({ ...base, date: start, kind: 'start' });
+    if (end) out.push({ ...base, date: end, kind: 'end' });
+  }
+  return out;
 }
 
 export function useProjectAgendaEvents(projectId: string | undefined) {
