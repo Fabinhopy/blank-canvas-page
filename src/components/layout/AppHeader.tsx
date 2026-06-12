@@ -97,7 +97,7 @@ export function AppHeader({ onOpenSearch, onOpenHelp }: AppHeaderProps) {
       {/* User Menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full" data-tour="profile">
             <Avatar>
               <AvatarImage src={avatarUrl || undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -125,6 +125,17 @@ export function AppHeader({ onOpenSearch, onOpenHelp }: AppHeaderProps) {
               <Settings className="mr-2 h-4 w-4" />
               <span>Configurações do Perfil</span>
             </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onOpenHelp?.()} className="cursor-pointer">
+            <Keyboard className="mr-2 h-4 w-4" />
+            <span>Atalhos de teclado</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => { resetOnboarding(); startOnboardingTour(); }}
+            className="cursor-pointer"
+          >
+            <PlayCircle className="mr-2 h-4 w-4" />
+            <span>Refazer tour guiado</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
