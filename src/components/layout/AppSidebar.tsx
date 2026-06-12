@@ -134,7 +134,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
+              <SidebarMenuItem data-tour="dashboard">
                 <SidebarMenuButton asChild isActive={location.pathname === '/dashboard'}>
                   <NavLink to="/dashboard" className="flex items-center gap-3">
                     <LayoutDashboard className="h-4 w-4" />
@@ -142,7 +142,7 @@ export function AppSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
+              <SidebarMenuItem data-tour="agenda">
                 <SidebarMenuButton asChild isActive={location.pathname === '/agenda'}>
                   <NavLink to="/agenda" className="flex items-center gap-3">
                     <CalendarDays className="h-4 w-4" />
@@ -200,7 +200,7 @@ export function AppSidebar() {
         {/* Global Trainings - only for non-admin users, inside main nav group */}
 
         {/* Projects List */}
-        <SidebarGroup>
+        <SidebarGroup data-tour="projects-list">
           {!collapsed && (
             <div className="px-3 py-2">
               <span className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
@@ -277,7 +277,7 @@ export function AppSidebar() {
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
+              <SidebarMenuItem data-tour="chat">
                 <SidebarMenuButton asChild isActive={location.pathname === '/chat'}>
                   <NavLink to="/chat" className="flex items-center gap-3">
                     <MessageCircle className="h-4 w-4" />
