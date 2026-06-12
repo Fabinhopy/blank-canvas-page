@@ -1,109 +1,87 @@
-# Redesenho do Sistema PMO
+# Plano: 8 novas features no SmartestClient
 
-## Visão Geral
+Vou implementar em **4 fases** para manter qualidade e permitir validação parcial. Cada fase é independente e pode ser revisada antes da próxima.
 
-Atualmente, "Suporte" e "Evolução" estão como etapas 6 e 7 do projeto, junto com Levantamento → Produção. Vamos separar:
+## Fase 1 — Base + UX rápida
+**1. Busca Global (Cmd+K / Ctrl+K)**
+- Componente `GlobalSearchDialog` usando `cmdk` (já vem com shadcn `Command`).
+- Busca em paralelo: `projects`, `documents`, `support_tickets`, `chat_messages` (respeitando RLS — admin vê tudo, cliente só os seus).
+- Atalho global `Cmd/Ctrl+K` registrado no `AppLayout`.
+- Resultados agrupados por tipo, com ícone e link de navegação.
 
-- **Projeto Principal** (etapas 1–5): Levantamento, Modelagem, Desenvolvimento, Homologação, Produção. Quando todas concluídas → projeto **Concluído**.
-- **Suporte**: tickets independentes do projeto, cada um com data início, data término e nível de prioridade.
-- **Evoluções**: cada evolução é um "mini-projeto" com suas próprias 5 etapas (Levantamento → Produção). Um projeto pode ter várias evoluções.
+**2. Atalhos de teclado**
+- Hook `useKeyboardShortcuts` central.
+- Atalhos: `g d` (Dashboard), `g p` (Projetos), `g c` (Chat), `g s` (SAC), `g a` (Agenda), `?` (modal de ajuda), `Cmd+K` (busca).
+- Modal `KeyboardShortcutsDialog` listando todos.
 
-## Mudanças no Banco de Dados
+**3. Onboarding guiado**
+- Lib `driver.js` (leve, ~10kb, sem dependências).
+- Flag `onboarding_completed` em `profiles` (nova coluna boolean).
+- Tour roda na primeira visita ao Dashboard: highlight em Sidebar > Dashboard, Projetos, Chat, SAC, sino de notificações, busca.
+- Botão "Refazer tour" no perfil.
 
-### 1. Remover Suporte/Evolução do `project_stages`
+## Fase 2 — Chat melhorado
+**4. Presença online/ausente**
+- Supabase Realtime Presence channel `presence:global`.
+- Cada cliente faz `track({ user_id, status, last_seen })` ao entrar.
+- Status: `online` (ativo), `away` (5 min sem atividade), `offline` (desconectado).
+- Indicador (bolinha verde/amarela/cinza) nos avatares do chat e listas.
 
-Migration para deletar registros com `stage_name IN ('Suporte', 'Evolução')` e ajustar `useCreateDefaultStages` para criar apenas 5 etapas.
+**5. Reações em mensagens**
+- Nova tabela `chat_message_reactions (id, message_id, user_id, emoji, created_at)`.
+- Botão "+" ao passar mouse na mensagem → popover com 6 emojis (👍 ✅ ❤️ 🎉 👀 🙏).
+- Agregação visual: `👍 3` clicável (toggle).
+- Realtime nas reações.
 
-### 2. `support_tickets` — adicionar campos
+## Fase 3 — Documentos colaborativos
+**6. Comentários em documentos**
+- Nova tabela `document_comments (id, document_id, user_id, parent_id, content, created_at, updated_at)`.
+- Botão "Comentários (N)" em cada documento → drawer lateral com thread.
+- Threads aninhadas 1 nível (reply).
+- Notificação automática ao autor do doc quando alguém comenta (trigger).
 
-- `start_date` (date)
-- `end_date` (date)
-- `priority` (text: 'low' | 'medium' | 'high' | 'critical', default 'medium')
+## Fase 4 — Produtividade admin
+**7. Templates de projeto**
+- Novas tabelas: `project_templates`, `project_template_stages`, `project_template_stage_items`, `project_template_milestones`.
+- Tela `/admin/templates` (CRUD).
+- Ao criar projeto no admin: dropdown "Criar a partir de template" → copia stages, items e milestones para o novo projeto.
+- Botão "Salvar como template" em projeto existente.
 
-### 3. Nova tabela `project_evolutions`
+**8. Logs de auditoria**
+- Nova tabela `audit_logs (id, user_id, action, resource_type, resource_id, metadata jsonb, ip, user_agent, created_at)`.
+- Triggers nas tabelas chave (`documents`, `videos`, `projects`, `support_tickets`) para INSERT/UPDATE/DELETE.
+- Função RPC `log_download(doc_id)` chamada no front quando baixa arquivo.
+- Tela `/admin/audit` com filtros (usuário, ação, recurso, data) e paginação.
 
-```
-id uuid PK
-project_id uuid (FK projects)
-title text
-description text
-status text ('pending' | 'in_progress' | 'completed')
-created_at, updated_at
-```
+---
 
-RLS: admin gerencia, usuários veem via `user_has_project_access`.
+## Detalhes técnicos
 
-### 4. Nova tabela `evolution_stages` (espelha project_stages)
+**Migrations necessárias** (1 por fase):
+- F1: `profiles.onboarding_completed boolean default false`.
+- F2: `chat_message_reactions` + RLS + GRANTs + ADD TO publication realtime.
+- F3: `document_comments` + RLS + GRANTs + trigger de notificação.
+- F4: 4 tabelas `project_template_*`, `audit_logs` + RLS + GRANTs + triggers de auditoria.
 
-```
-id uuid PK
-evolution_id uuid (FK project_evolutions)
-stage_name text (Levantamento, Modelagem, Desenvolvimento, Homologação, Produção)
-status, order_index, started_at, completed_at, notes
-```
+**Dependências novas**:
+- `cmdk` (já presente via shadcn) — verificar.
+- `driver.js` — `bun add driver.js`.
 
-RLS via join com project_evolutions → projects.
+**Arquivos novos** (~estimativa):
+- `src/components/search/GlobalSearchDialog.tsx`
+- `src/components/shortcuts/KeyboardShortcutsDialog.tsx`
+- `src/hooks/useKeyboardShortcuts.ts`
+- `src/hooks/usePresence.ts`
+- `src/hooks/useOnboardingTour.ts`
+- `src/components/chat/MessageReactions.tsx`
+- `src/components/documentos/DocumentComments.tsx`
+- `src/pages/admin/Templates.tsx`
+- `src/pages/admin/AuditLogs.tsx`
+- Updates em `AppLayout`, `Sidebar`, `ChatMessages`, `DocumentList`, `Dashboard`.
 
-### 5. Nova tabela `evolution_stage_items` (espelha project_stage_items)
+**Estimativa**: ~25 arquivos novos/editados + 4 migrations. Vou entregar uma fase por turno para você validar antes da próxima.
 
-Checklist por etapa de evolução. Mesmas colunas de `project_stage_items` mas com `evolution_stage_id`.
+---
 
-## Mudanças na UI
-
-### Gantt e Progresso do Projeto (`ProjectProgress.tsx`)
-
-- Gantt e Timeline mostram **apenas etapas 1–5**.
-- Aba/seção separada "Evoluções" lista evoluções com botão "Nova Evolução" (admin).
-- Cada evolução exibe seu próprio mini-Gantt + checklist.
-
-### Status do projeto (`useProjects.ts`)
-
-Quando todas as 5 etapas principais concluídas → `status = 'completed'`.
-
-### Página de Suporte (`Support.tsx` + `AdminSupport`)
-
-- Form de novo ticket: campo prioridade (Baixa/Média/Alta) + data início.
-- Admin pode definir/editar data término ao responder/encerrar.
-- Listagem com badges coloridos por prioridade.
-
-### Visão Geral (`ProjectOverview.tsx`)
-
-- Timeline de 5 etapas (não 7).
-- Card "Evoluções": contagem ativas/concluídas + link.
-- Card "Suporte": tickets abertos do projeto com prioridade.
-
-### Admin
-
-- `AdminProjectStages`: remover linhas Suporte/Evolução.
-- Nova página `AdminProjectEvolutions` para CRUD de evoluções e suas etapas.
-
-## Arquivos Principais
-
-**Novos:**
-
-- `sql/redesign_pmo.sql` (migration completa)
-- `src/hooks/useProjectEvolutions.ts`
-- `src/hooks/useEvolutionStages.ts`
-- `src/hooks/useEvolutionStageItems.ts`
-- `src/components/projeto/EvolutionsSection.tsx`
-- `src/components/projeto/EvolutionGantt.tsx`
-- `src/pages/admin/AdminProjectEvolutions.tsx`
-
-**Editados:**
-
-- `src/hooks/useProjectStages.ts` — remover Suporte/Evolução do default
-- `src/hooks/useSupportTickets.ts` — campos prioridade/datas
-- `src/pages/projeto/ProjectProgress.tsx` — Gantt sem 6/7 + seção evoluções
-- `src/pages/projeto/ProjectOverview.tsx` — timeline 5 etapas
-- `src/pages/Support.tsx` + admin — prioridade e datas
-- `src/components/projeto/ProjectProgressTimeline.tsx` — só 1–5
-- `src/pages/admin/AdminProjectStages.tsx` — sem complementares
-
-## Migração de Dados Existentes
-
-- Etapas "Suporte" e "Evolução" existentes em `project_stages` serão **removidas** (com seus checklists). Se algum projeto já tem dados nelas, eles serão perdidos. Confirmar antes.
-- `support_tickets` existentes recebem `priority='medium'` e datas nulas.
-
-## Pergunta Antes de Executar
-
-Posso **deletar** as etapas existentes "Suporte" e "Evolução" do banco (com seus checklists)? Ou prefere que eu mantenha como histórico e só esconda da UI?
+## Pergunta antes de começar
+Posso seguir essa ordem (F1 → F4) entregando uma fase por turno, ou prefere outra prioridade? Se quiser, começo já pela Fase 1 agora.

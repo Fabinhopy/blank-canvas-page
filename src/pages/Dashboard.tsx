@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAllMilestones } from '@/hooks/useAllMilestones';
+import { useAutoStartOnboarding } from '@/hooks/useOnboardingTour';
 
 import { 
   FolderKanban, 
@@ -28,6 +29,8 @@ export default function Dashboard() {
   const { profile, userRole } = useAuth();
   const { data: projects, isLoading } = useProjects();
   const { documentsCount, trainingsCount, stagesByProject } = useDashboardStats();
+  useAutoStartOnboarding(true);
+
   const { data: milestones } = useAllMilestones();
 
   const upcomingMilestones = milestones
