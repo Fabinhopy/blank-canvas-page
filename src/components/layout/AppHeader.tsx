@@ -53,9 +53,36 @@ export function AppHeader({ onOpenSearch, onOpenHelp }: AppHeaderProps) {
       <Breadcrumbs />
       
       <div className="flex-1" />
-      
-      <NotificationBell />
-      
+
+      {/* Global search trigger */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onOpenSearch?.()}
+        data-tour="search"
+        className="hidden md:inline-flex items-center gap-2 text-muted-foreground"
+      >
+        <Search className="h-4 w-4" />
+        <span>Buscar...</span>
+        <kbd className="ml-2 hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px]">
+          Ctrl K
+        </kbd>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden"
+        onClick={() => onOpenSearch?.()}
+        data-tour="search"
+        aria-label="Buscar"
+      >
+        <Search className="h-4 w-4" />
+      </Button>
+
+      <div data-tour="notifications">
+        <NotificationBell />
+      </div>
+
       {/* Role Badge */}
       <div className="hidden sm:flex items-center gap-2">
         <span className={`text-xs font-medium px-2 py-1 rounded-full ${
