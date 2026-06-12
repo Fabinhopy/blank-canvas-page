@@ -10,13 +10,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings } from 'lucide-react';
+import { LogOut, Settings, Search, Keyboard, PlayCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 import { NotificationBell } from './NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
+import { resetOnboarding, startOnboardingTour } from '@/hooks/useOnboardingTour';
 
-export function AppHeader() {
+interface AppHeaderProps {
+  onOpenSearch?: () => void;
+  onOpenHelp?: () => void;
+}
+
+export function AppHeader({ onOpenSearch, onOpenHelp }: AppHeaderProps) {
   const { profile, userRole, signOut } = useAuth();
   const navigate = useNavigate();
 
