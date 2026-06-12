@@ -154,18 +154,23 @@ export function ProjectRoadmap({ milestones, isLoading, events = [], showProject
                       );
                     })}
                     {dayEvents.map(ev => {
-                      const prefix = ev.kind === 'start' ? '▶ ' : '■ ';
-                      const ringCls = ev.kind === 'start' ? 'border-dashed' : '';
+                      const isStart = ev.kind === 'start';
+                      const kindLabel = isStart ? 'Início' : 'Fim';
+                      const ringCls = isStart ? 'border-dashed' : '';
                       const colorCls = ev.source === 'evolution'
                         ? 'bg-success/10 text-success border-success/20'
                         : 'bg-accent/40 text-accent-foreground border-accent';
+                      // For progress: title === stage_name; show only one. For evolution: title already includes stage.
+                      const label = ev.source === 'progress' ? ev.stage_name : ev.title;
+                      const tooltip = `${kindLabel} — ${label}${showProjectName ? ` · ${ev.project_name}` : ''}`;
                       return (
                         <div
                           key={ev.id + ev.kind}
-                          className={`text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${colorCls} ${ringCls} ${ev.is_completed ? 'line-through opacity-60' : ''}`}
-                          title={`${prefix}${ev.stage_name}: ${ev.title}${showProjectName ? ` — ${ev.project_name}` : ''}`}
+                          className={`flex items-center gap-1 text-[10px] leading-tight px-1 py-0.5 rounded border truncate ${colorCls} ${ringCls} ${ev.is_completed ? 'line-through opacity-60' : ''}`}
+                          title={tooltip}
                         >
-                          {prefix}{ev.title}
+                          <span aria-hidden className="shrink-0">{isStart ? '▶' : '⬛'}</span>
+                          <span className="truncate">{label}</span>
                         </div>
                       );
                     })}
