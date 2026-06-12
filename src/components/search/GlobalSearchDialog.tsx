@@ -55,7 +55,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: Props) {
         const [projRes, docRes, ticketRes, msgRes] = await Promise.all([
           supabase.from('projects').select('id, name, description').ilike('name', like).limit(6),
           supabase.from('documents').select('id, name, description, project_id').or(`name.ilike.${like},description.ilike.${like}`).limit(6),
-          supabase.from('support_tickets').select('id, subject, description, project_id').or(`subject.ilike.${like},description.ilike.${like}`).limit(6),
+          supabase.from('support_tickets').select('id, subject, message, project_id').or(`subject.ilike.${like},message.ilike.${like}`).limit(6),
           supabase.from('chat_messages').select('id, content, conversation_id').ilike('content', like).limit(6),
         ]);
 
@@ -69,7 +69,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: Props) {
           out.push({ type: 'document', id: d.id, projectId: d.project_id, title: d.name, subtitle: d.description || undefined })
         );
         (ticketRes.data || []).forEach((t: any) =>
-          out.push({ type: 'ticket', id: t.id, title: t.subject, subtitle: t.description || undefined, projectId: t.project_id })
+          out.push({ type: 'ticket', id: t.id, title: t.subject, subtitle: t.message || undefined, projectId: t.project_id })
         );
         (msgRes.data || []).forEach((m: any) =>
           out.push({ type: 'message', id: m.id, conversationId: m.conversation_id, title: m.content?.slice(0, 80) || 'Mensagem' })
