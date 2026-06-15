@@ -147,7 +147,7 @@ export function StageChecklist({ stageId, projectId, isAdmin, source = 'project'
 
       // Link document to checklist item
       const { error: linkError } = await (supabase as any)
-        .from('project_stage_items')
+        .from(tableName)
         .update({ document_id: doc.id })
         .eq('id', activeItemId);
       if (linkError) throw linkError;
