@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useProjectEvolutions, useCreateEvolution, useDeleteEvolution, useEvolutionStages, useUpdateEvolutionStage, ProjectEvolution } from '@/hooks/useProjectEvolutions';
+import { useProjectEvolutions, useCreateEvolution, useDeleteEvolution, ProjectEvolution } from '@/hooks/useProjectEvolutions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, TrendingUp, Loader2, Calendar, Trash2, ChevronDown, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
-import { format, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Plus, TrendingUp, Loader2, Calendar, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { EvolutionDetail } from './EvolutionDetail';
 
 interface Props {
   projectId: string;
