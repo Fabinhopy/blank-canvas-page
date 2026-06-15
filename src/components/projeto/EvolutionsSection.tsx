@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useProjectEvolutions, useCreateEvolution, useDeleteEvolution, useEvolutionStages, useUpdateEvolutionStage, ProjectEvolution } from '@/hooks/useProjectEvolutions';
+import { useProjectEvolutions, useCreateEvolution, useDeleteEvolution, ProjectEvolution } from '@/hooks/useProjectEvolutions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, TrendingUp, Loader2, Calendar, Trash2, ChevronDown, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
-import { format, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Plus, TrendingUp, Loader2, Calendar, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { EvolutionDetail } from './EvolutionDetail';
 
 interface Props {
   projectId: string;
@@ -125,6 +124,7 @@ export function EvolutionsSection({ projectId, isAdmin, projectCompleted }: Prop
               <EvolutionItem
                 key={evo.id}
                 evolution={evo}
+                projectId={projectId}
                 expanded={expanded === evo.id}
                 onToggle={() => setExpanded(expanded === evo.id ? null : evo.id)}
                 onDelete={async () => {
@@ -142,18 +142,16 @@ export function EvolutionsSection({ projectId, isAdmin, projectCompleted }: Prop
   );
 }
 
-function EvolutionItem({ evolution, expanded, onToggle, onDelete, isAdmin }: {
+function EvolutionItem({ evolution, projectId, expanded, onToggle, onDelete, isAdmin }: {
   evolution: ProjectEvolution;
+  projectId: string;
   expanded: boolean;
   onToggle: () => void;
   onDelete: () => void;
   isAdmin: boolean;
 }) {
-  const { data: stages } = useEvolutionStages(expanded ? evolution.id : undefined);
-  const updateStage = useUpdateEvolutionStage();
-
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-lg overflow-hidden">
       <div
         className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50"
         onClick={onToggle}
@@ -181,94 +179,16 @@ function EvolutionItem({ evolution, expanded, onToggle, onDelete, isAdmin }: {
           </Button>
         )}
       </div>
-      {expanded && stages && (
-        <div className="border-t p-3 space-y-2 bg-muted/30">
-          <div className="text-xs font-semibold text-muted-foreground uppercase">Etapas da Evolução</div>
-          {stages.map((s) => {
-            const isDone = s.status === 'completed';
-            return (
-              <div key={s.id} className="flex items-center gap-2 text-sm">
-                {isDone ? (
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                ) : (
-                  <Circle className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="w-32">{s.order_index + 1}. {s.stage_name}</span>
-                {isAdmin && (
-                  <>
-                    <Input
-                      type="date"
-                      className="h-7 text-xs w-36"
-                      defaultValue={s.started_at ? new Date(s.started_at).toISOString().split('T')[0] : ''}
-                      onBlur={(e) => updateStage.mutate({
-                        id: s.id,
-                        updates: { started_at: e.target.value ? new Date(e.target.value).toISOString() : null }
-                      })}
-                    />
-                    <Input
-                      type="date"
-                      className="h-7 text-xs w-36"
-                      defaultValue={s.completed_at ? new Date(s.completed_at).toISOString().split('T')[0] : ''}
-                      onBlur={(e) => {
-                        const v = e.target.value;
-                        updateStage.mutate({
-                          id: s.id,
-                          updates: {
-                            completed_at: v ? new Date(v).toISOString() : null,
-                            status: v ? 'completed' : 'in_progress',
-                          }
-                        });
-                      }}
-                    />
-                  </>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Mini-Gantt */}
-          {stages.some(s => s.started_at) && <EvolutionGantt stages={stages} />}
+      {expanded && (
+        <div className="border-t p-4 bg-muted/20">
+          <EvolutionDetail
+            evolutionId={evolution.id}
+            projectId={projectId}
+            isAdmin={isAdmin}
+          />
         </div>
       )}
     </div>
   );
 }
 
-function EvolutionGantt({ stages }: { stages: any[] }) {
-  const dated = stages.filter(s => s.started_at);
-  if (dated.length === 0) return null;
-  const allDates = dated.flatMap(s => {
-    const d = [new Date(s.started_at)];
-    if (s.completed_at) d.push(new Date(s.completed_at));
-    return d;
-  });
-  const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
-  const maxDate = new Date(Math.max(...allDates.map(d => d.getTime()), Date.now()));
-  const totalDays = Math.max(differenceInDays(maxDate, minDate), 1);
-
-  return (
-    <div className="mt-3 space-y-1.5">
-      <div className="text-xs font-semibold text-muted-foreground uppercase">Gantt</div>
-      {stages.map(s => {
-        if (!s.started_at) return null;
-        const start = new Date(s.started_at);
-        const end = s.completed_at ? new Date(s.completed_at) : new Date();
-        const left = (differenceInDays(start, minDate) / totalDays) * 100;
-        const width = Math.max((differenceInDays(end, start) / totalDays) * 100, 2);
-        return (
-          <div key={s.id} className="flex items-center gap-2">
-            <div className="w-28 text-xs truncate">{s.stage_name}</div>
-            <div className="flex-1 h-5 bg-muted rounded relative">
-              <div
-                className={cn('absolute top-0.5 bottom-0.5 rounded',
-                  s.status === 'completed' ? 'bg-primary' : 'bg-warning'
-                )}
-                style={{ left: `${left}%`, width: `${width}%`, minWidth: '6px' }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useProjectStageItems, useCreateStageItem, useUpdateStageItem, useDeleteStageItem, type StageItemType, type StageItemPriority } from '@/hooks/useProjectStageItems';
+import { useEvolutionStageItems, useCreateEvolutionStageItem, useUpdateEvolutionStageItem, useDeleteEvolutionStageItem } from '@/hooks/useEvolutionStageItems';
 import { useAdminUsers } from '@/hooks/useSupportTickets';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -32,13 +33,44 @@ interface StageChecklistProps {
   stageId: string;
   projectId: string;
   isAdmin: boolean;
+  source?: 'project' | 'evolution';
 }
 
-export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistProps) {
-  const { data: items, isLoading } = useProjectStageItems(stageId);
-  const createItem = useCreateStageItem();
-  const updateItem = useUpdateStageItem();
-  const deleteItem = useDeleteStageItem();
+export function StageChecklist({ stageId, projectId, isAdmin, source = 'project' }: StageChecklistProps) {
+  const isEvolution = source === 'evolution';
+  const tableName = isEvolution ? 'evolution_stage_items' : 'project_stage_items';
+  const stageFkColumn = isEvolution ? 'evolution_stage_id' : 'stage_id';
+
+  const projectItems = useProjectStageItems(isEvolution ? undefined : stageId);
+  const evolutionItems = useEvolutionStageItems(isEvolution ? stageId : undefined);
+  const items = isEvolution ? evolutionItems.data : projectItems.data;
+  const isLoading = isEvolution ? evolutionItems.isLoading : projectItems.isLoading;
+
+  const createProject = useCreateStageItem();
+  const createEvolution = useCreateEvolutionStageItem();
+  const updateProject = useUpdateStageItem();
+  const updateEvolution = useUpdateEvolutionStageItem();
+  const deleteProject = useDeleteStageItem();
+  const deleteEvolution = useDeleteEvolutionStageItem();
+
+  const createItem = {
+    mutate: (input: any, opts?: any) => {
+      if (isEvolution) {
+        const { stage_id, ...rest } = input;
+        createEvolution.mutate({ ...rest, evolution_stage_id: stage_id }, opts);
+      } else {
+        createProject.mutate(input, opts);
+      }
+    },
+    isPending: isEvolution ? createEvolution.isPending : createProject.isPending,
+  };
+  const updateItem = {
+    mutate: (input: any, opts?: any) => isEvolution ? updateEvolution.mutate(input, opts) : updateProject.mutate(input, opts),
+  };
+  const deleteItem = {
+    mutate: (id: string, opts?: any) => isEvolution ? deleteEvolution.mutate(id, opts) : deleteProject.mutate(id, opts),
+  };
+
   const { data: admins } = useAdminUsers();
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemType, setNewItemType] = useState<StageItemType>('task');
@@ -120,7 +152,7 @@ export function StageChecklist({ stageId, projectId, isAdmin }: StageChecklistPr
 
       // Link document to checklist item
       const { error: linkError } = await (supabase as any)
-        .from('project_stage_items')
+        .from(tableName)
         .update({ document_id: doc.id })
         .eq('id', activeItemId);
       if (linkError) throw linkError;
