@@ -54,9 +54,14 @@ export function StageChecklist({ stageId, projectId, isAdmin, source = 'project'
   const deleteEvolution = useDeleteEvolutionStageItem();
 
   const createItem = {
-    mutate: (input: any, opts?: any) => isEvolution
-      ? createEvolution.mutate({ ...input, evolution_stage_id: input.stage_id, stage_id: undefined } as any, opts)
-      : createProject.mutate(input, opts),
+    mutate: (input: any, opts?: any) => {
+      if (isEvolution) {
+        const { stage_id, ...rest } = input;
+        createEvolution.mutate({ ...rest, evolution_stage_id: stage_id }, opts);
+      } else {
+        createProject.mutate(input, opts);
+      }
+    },
     isPending: isEvolution ? createEvolution.isPending : createProject.isPending,
   };
   const updateItem = {
