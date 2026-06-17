@@ -1,17 +1,22 @@
-import { useState } from 'react';
-import { useEvolutionStages, useUpdateEvolutionStage, EvolutionStage } from '@/hooks/useProjectEvolutions';
+import { useState, useEffect } from 'react';
+import { useEvolutionStages, useUpdateEvolutionStage, useUpdateEvolution, useProjectEvolutions, EvolutionStage } from '@/hooks/useProjectEvolutions';
 import { useAllEvolutionStageItems, useEvolutionStageItems } from '@/hooks/useEvolutionStageItems';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { StageChecklist } from './StageChecklist';
 import {
   ClipboardList, Database, Code, TestTube, Rocket,
   Circle, Loader2, ChevronDown, ChevronRight,
-  TableIcon, BarChart3,
+  TableIcon, BarChart3, Pencil, FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 const stageIcons: Record<string, React.ElementType> = {
   'Levantamento': ClipboardList,
