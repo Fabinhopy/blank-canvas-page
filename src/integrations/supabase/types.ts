@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          project_id: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          project_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          project_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           client_user_id: string
@@ -42,6 +81,38 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -213,6 +284,51 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_comments: {
+        Row: {
+          content: string
+          created_at: string
+          document_id: string
+          id: string
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          document_id: string
+          id?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_comments_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "document_comments"
             referencedColumns: ["id"]
           },
         ]
@@ -730,6 +846,141 @@ export type Database = {
           },
         ]
       }
+      project_template_milestones: {
+        Row: {
+          created_at: string
+          days_offset: number
+          description: string | null
+          id: string
+          order_index: number
+          template_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          days_offset?: number
+          description?: string | null
+          id?: string
+          order_index?: number
+          template_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          days_offset?: number
+          description?: string | null
+          id?: string
+          order_index?: number
+          template_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_template_milestones_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "project_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_template_stage_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_type: string
+          order_index: number
+          priority: string
+          template_stage_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_type?: string
+          order_index?: number
+          priority?: string
+          template_stage_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_type?: string
+          order_index?: number
+          priority?: string
+          template_stage_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_template_stage_items_template_stage_id_fkey"
+            columns: ["template_stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_template_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_template_stages: {
+        Row: {
+          created_at: string
+          id: string
+          order_index: number
+          stage_name: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_index?: number
+          stage_name: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_index?: number
+          stage_name?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_template_stages_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "project_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_versions: {
         Row: {
           created_at: string
@@ -991,6 +1242,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      log_document_download: {
+        Args: { _document_id: string }
+        Returns: undefined
+      }
       user_has_project_access: {
         Args: { _project_id: string }
         Returns: boolean
