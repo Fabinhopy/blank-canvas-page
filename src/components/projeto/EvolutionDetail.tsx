@@ -1,17 +1,22 @@
-import { useState } from 'react';
-import { useEvolutionStages, useUpdateEvolutionStage, EvolutionStage } from '@/hooks/useProjectEvolutions';
+import { useState, useEffect } from 'react';
+import { useEvolutionStages, useUpdateEvolutionStage, useUpdateEvolution, useProjectEvolutions, EvolutionStage } from '@/hooks/useProjectEvolutions';
 import { useAllEvolutionStageItems, useEvolutionStageItems } from '@/hooks/useEvolutionStageItems';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { StageChecklist } from './StageChecklist';
 import {
   ClipboardList, Database, Code, TestTube, Rocket,
   Circle, Loader2, ChevronDown, ChevronRight,
-  TableIcon, BarChart3,
+  TableIcon, BarChart3, Pencil, FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 const stageIcons: Record<string, React.ElementType> = {
   'Levantamento': ClipboardList,
@@ -32,15 +37,99 @@ interface Props {
 export function EvolutionDetail({ evolutionId, projectId, isAdmin }: Props) {
   const { data: stages, isLoading } = useEvolutionStages(evolutionId);
   const { data: allItems } = useAllEvolutionStageItems(evolutionId);
+  const { data: evolutions } = useProjectEvolutions(projectId);
+  const evolution = evolutions?.find(e => e.id === evolutionId);
+  const updateEvolution = useUpdateEvolution();
   const [expandedStage, setExpandedStage] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ title: '', description: '' });
+
+  useEffect(() => {
+    if (evolution) setEditForm({ title: evolution.title, description: evolution.description || '' });
+  }, [evolution?.id]);
 
   const progressPercent = allItems && allItems.totalItems > 0
     ? Math.round((allItems.completedItems / allItems.totalItems) * 100)
     : 0;
 
+  const handleSaveInfo = async () => {
+    if (!editForm.title.trim()) { toast.error('Informe um título'); return; }
+    try {
+      await updateEvolution.mutateAsync({
+        id: evolutionId,
+        updates: { title: editForm.title, description: editForm.description || null },
+      });
+      toast.success('Evolução atualizada');
+      setEditOpen(false);
+    } catch (e: any) {
+      toast.error('Erro: ' + e.message);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Info card: title + description */}
+      {evolution && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="h-10 w-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg">{evolution.title}</CardTitle>
+                  <CardDescription className="mt-1 whitespace-pre-wrap">
+                    {evolution.description || (isAdmin ? 'Sem descrição. Clique em editar para adicionar.' : 'Sem descrição.')}
+                  </CardDescription>
+                </div>
+              </div>
+              {isAdmin && (
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
+                      <Pencil className="h-3.5 w-3.5" /> Editar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Evolução</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <div>
+                        <Label>Título *</Label>
+                        <Input
+                          value={editForm.title}
+                          onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+                          placeholder="Ex.: Novo módulo de relatórios"
+                        />
+                      </div>
+                      <div>
+                        <Label>Descrição</Label>
+                        <Textarea
+                          rows={5}
+                          value={editForm.description}
+                          onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                          placeholder="Descreva o que será feito nesta evolução..."
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
+                      <Button onClick={handleSaveInfo} disabled={updateEvolution.isPending}>
+                        {updateEvolution.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                        Salvar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+          </CardHeader>
+        </Card>
+      )}
+
       {/* Header with view toggle */}
       <div className="flex items-center justify-between">
         <div className="text-sm font-semibold text-muted-foreground uppercase">Etapas da Evolução</div>
