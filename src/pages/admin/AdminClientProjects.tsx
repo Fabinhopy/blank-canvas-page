@@ -237,7 +237,7 @@ export default function AdminClientProjects() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', start_date: '', end_date: '' }); }}>
+              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' }); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Projeto
               </Button>
