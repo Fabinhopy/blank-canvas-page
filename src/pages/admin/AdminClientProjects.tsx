@@ -201,6 +201,7 @@ export default function AdminClientProjects() {
       project_type: (project.project_type as 'bi' | 'automation' | 'sql') || 'bi',
       start_date: project.start_date || '',
       end_date: project.end_date || '',
+      end_date_indeterminate: !project.end_date && !!project.start_date,
     });
     setIsOpen(true);
   };
