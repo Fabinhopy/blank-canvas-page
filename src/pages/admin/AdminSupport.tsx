@@ -401,8 +401,10 @@ export default function AdminSupport() {
                       <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded', prio.cls)}>
                         <Flag className="h-2.5 w-2.5 inline mr-0.5" /> {prio.label}
                       </span>
-                      {t.project_name && (
+                      {t.project_name ? (
                         <Badge variant="secondary" className="text-[10px] ml-auto">{t.project_name}</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] ml-auto text-primary border-primary/30">{SYSTEM_SUPPORT_LABEL}</Badge>
                       )}
                     </div>
                     <p className="text-sm font-medium">{t.subject}</p>
