@@ -208,6 +208,17 @@ export default function AdminSupport() {
                         <CommandList>
                           <CommandEmpty>Nenhum projeto encontrado.</CommandEmpty>
                           <CommandGroup>
+                            <CommandItem
+                              value="central de duvidas"
+                              onSelect={() => {
+                                setF({ ...f, project_id: '' });
+                                setOpenFormProject(false);
+                              }}
+                            >
+                              <Check className={cn('mr-2 h-4 w-4', !f.project_id ? 'opacity-100' : 'opacity-0')} />
+                              <span className="truncate font-medium">{SYSTEM_SUPPORT_LABEL}</span>
+                              <span className="ml-auto text-xs text-muted-foreground">Geral</span>
+                            </CommandItem>
                             {projects?.map(p => (
                               <CommandItem
                                 key={p.id}
