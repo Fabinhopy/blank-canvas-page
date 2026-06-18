@@ -80,6 +80,7 @@ export default function AdminClientProjects() {
     project_type: 'bi' as 'bi' | 'automation' | 'sql',
     start_date: '',
     end_date: '',
+    end_date_indeterminate: false,
   });
 
   const { data: client } = useQuery({
