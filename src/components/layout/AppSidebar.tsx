@@ -32,7 +32,6 @@ import {
   BarChart3,
   CalendarDays,
   MessageCircle,
-  Briefcase,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
@@ -182,14 +181,6 @@ export function AppSidebar() {
                     <NavLink to="/admin/empresas" className="flex items-center gap-3">
                       <Building2 className="h-4 w-4" />
                       {!collapsed && <span>Empresas</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/projetos'}>
-                    <NavLink to="/admin/projetos" className="flex items-center gap-3">
-                      <Briefcase className="h-4 w-4" />
-                      {!collapsed && <span>Projetos</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
