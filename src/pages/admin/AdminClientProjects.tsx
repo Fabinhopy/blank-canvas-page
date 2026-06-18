@@ -187,7 +187,7 @@ export default function AdminClientProjects() {
   const handleClose = () => {
     setIsOpen(false);
     setEditingProject(null);
-    setFormData({ name: '', description: '', status: 'active', start_date: '', end_date: '' });
+    setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' });
   };
 
   const handleEdit = (project: Project) => {
@@ -196,6 +196,7 @@ export default function AdminClientProjects() {
       name: project.name,
       description: project.description || '',
       status: project.status || 'active',
+      project_type: (project.project_type as 'bi' | 'automation' | 'sql') || 'bi',
       start_date: project.start_date || '',
       end_date: project.end_date || '',
     });
