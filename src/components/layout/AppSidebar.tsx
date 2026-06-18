@@ -18,6 +18,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientBranding } from '@/hooks/useClientBranding';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { 
