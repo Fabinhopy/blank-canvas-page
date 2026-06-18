@@ -239,14 +239,42 @@ export function AppSidebar() {
               </span>
             </div>
           )}
+          {!collapsed && projects && projects.length > 0 && (
+            <div className="px-2 pb-2 space-y-2">
+              {isAdmin && (
+                <Select value={clientFilter} onValueChange={(v) => { setClientFilter(v); setProjectFilter('all'); }}>
+                  <SelectTrigger className="h-8 bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground text-xs">
+                    <SelectValue placeholder="Filtrar cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os clientes</SelectItem>
+                    {clients?.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="h-8 bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground text-xs">
+                  <SelectValue placeholder="Filtrar projeto" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os projetos</SelectItem>
+                  {projectOptions.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               {isLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-4 w-4 animate-spin text-sidebar-foreground/60" />
                 </div>
-              ) : projects && projects.length > 0 ? (
-                projects.map((project) => (
+              ) : filteredProjects && filteredProjects.length > 0 ? (
+                filteredProjects.map((project) => (
                   <Collapsible
                     key={project.id}
                     open={isProjectOpen(project.id)}
