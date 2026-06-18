@@ -55,10 +55,17 @@ interface Project {
   name: string;
   description: string | null;
   status: string | null;
+  project_type: 'bi' | 'automation' | 'sql' | null;
   start_date: string | null;
   end_date: string | null;
   created_at: string;
 }
+
+const PROJECT_TYPE_LABELS: Record<string, string> = {
+  bi: 'BI',
+  automation: 'Automação',
+  sql: 'SQL',
+};
 
 export default function AdminClientProjects() {
   const { clientId } = useParams<{ clientId: string }>();
