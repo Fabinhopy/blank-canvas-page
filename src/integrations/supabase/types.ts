@@ -1036,6 +1036,7 @@ export type Database = {
           end_date: string | null
           id: string
           name: string
+          project_type: Database["public"]["Enums"]["project_type"]
           start_date: string | null
           status: string | null
           updated_at: string
@@ -1047,6 +1048,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name: string
+          project_type?: Database["public"]["Enums"]["project_type"]
           start_date?: string | null
           status?: string | null
           updated_at?: string
@@ -1058,6 +1060,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name?: string
+          project_type?: Database["public"]["Enums"]["project_type"]
           start_date?: string | null
           status?: string | null
           updated_at?: string
@@ -1254,6 +1257,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "client"
       document_type: "technical_docs" | "data_modeling" | "user_manuals"
+      project_type: "bi" | "automation" | "sql"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1383,6 +1387,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "client"],
       document_type: ["technical_docs", "data_modeling", "user_manuals"],
+      project_type: ["bi", "automation", "sql"],
     },
   },
 } as const
