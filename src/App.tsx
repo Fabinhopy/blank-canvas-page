@@ -121,6 +121,9 @@ const App = () => (
             <Route path="/admin/suporte" element={
               <ProtectedRoute requireAdmin={true}><AdminSupport /></ProtectedRoute>
             } />
+            <Route path="/suporte" element={
+              <ProtectedRoute><AdminSupport /></ProtectedRoute>
+            } />
             
             {/* Global Trainings */}
             <Route path="/treinamentos" element={
