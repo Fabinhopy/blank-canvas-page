@@ -112,6 +112,7 @@ export default function AdminSupport() {
   }, [filterProject, projects]);
 
   const formProjectLabel = useMemo(() => {
+    if (!f.project_id) return SYSTEM_SUPPORT_LABEL;
     const p = projects?.find(p => p.id === f.project_id);
     return p ? `${p.name}${p.clients ? ` · ${p.clients.name}` : ''}` : 'Selecione o projeto';
   }, [f.project_id, projects]);
