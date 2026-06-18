@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   FolderKanban, 
   Plus, 
@@ -79,6 +80,7 @@ export default function AdminClientProjects() {
     project_type: 'bi' as 'bi' | 'automation' | 'sql',
     start_date: '',
     end_date: '',
+    end_date_indeterminate: false,
   });
 
   const { data: client } = useQuery({
@@ -187,7 +189,7 @@ export default function AdminClientProjects() {
   const handleClose = () => {
     setIsOpen(false);
     setEditingProject(null);
-    setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' });
+    setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '', end_date_indeterminate: false });
   };
 
   const handleEdit = (project: Project) => {
@@ -199,6 +201,7 @@ export default function AdminClientProjects() {
       project_type: (project.project_type as 'bi' | 'automation' | 'sql') || 'bi',
       start_date: project.start_date || '',
       end_date: project.end_date || '',
+      end_date_indeterminate: !project.end_date && !!project.start_date,
     });
     setIsOpen(true);
   };
@@ -237,7 +240,7 @@ export default function AdminClientProjects() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' }); }}>
+              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '', end_date_indeterminate: false }); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Projeto
               </Button>
@@ -295,7 +298,16 @@ export default function AdminClientProjects() {
                       <Label htmlFor="status">Status</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value) => setFormData({ ...formData, status: value })}
+                        onValueChange={(value) => {
+                          const today = new Date().toISOString().slice(0, 10);
+                          setFormData({
+                            ...formData,
+                            status: value,
+                            ...(value === 'completed' && !formData.end_date
+                              ? { end_date: today, end_date_indeterminate: false }
+                              : {}),
+                          });
+                        }}
                       >
                         <SelectTrigger id="status">
                           <SelectValue placeholder="Selecione o status" />
@@ -319,13 +331,32 @@ export default function AdminClientProjects() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="end_date">Data de Término</Label>
+                      <Label htmlFor="end_date">
+                        {formData.status === 'completed' ? 'Data de Conclusão' : 'Data de Término'}
+                      </Label>
                       <Input
                         id="end_date"
                         type="date"
                         value={formData.end_date}
+                        disabled={formData.end_date_indeterminate}
                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                       />
+                      <div className="flex items-center gap-2 pt-1">
+                        <Checkbox
+                          id="end_date_indeterminate"
+                          checked={formData.end_date_indeterminate}
+                          onCheckedChange={(checked) =>
+                            setFormData({
+                              ...formData,
+                              end_date_indeterminate: !!checked,
+                              end_date: checked ? '' : formData.end_date,
+                            })
+                          }
+                        />
+                        <Label htmlFor="end_date_indeterminate" className="text-xs font-normal cursor-pointer">
+                          Prazo indeterminado
+                        </Label>
+                      </div>
                     </div>
                   </div>
                 </div>
