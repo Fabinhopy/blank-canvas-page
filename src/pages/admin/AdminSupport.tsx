@@ -435,8 +435,10 @@ export default function AdminSupport() {
                   <DialogTitle>{openTicket.subject}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
-                  {openTicket.project_name && (
+                  {openTicket.project_name ? (
                     <Badge variant="secondary">{openTicket.project_name}</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-primary border-primary/30">{SYSTEM_SUPPORT_LABEL}</Badge>
                   )}
                   <p className="text-sm whitespace-pre-wrap">{openTicket.message}</p>
                   <div className="grid grid-cols-2 gap-3">
