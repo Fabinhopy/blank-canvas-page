@@ -18,7 +18,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientBranding } from '@/hooks/useClientBranding';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -35,8 +34,20 @@ import {
   BarChart3,
   CalendarDays,
   MessageCircle,
+  Search,
+  Check,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 // Logical order: Overview → Agenda → Progress → Docs → Trainings → Versions → Announcements → Settings
 const projectSubMenuItems = [
@@ -59,6 +70,8 @@ export function AppSidebar() {
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [openClientPopover, setOpenClientPopover] = useState(false);
+  const [openProjectPopover, setOpenProjectPopover] = useState(false);
 
   const { data: clients } = useQuery({
     queryKey: ['sidebar-clients'],
@@ -141,6 +154,16 @@ export function AppSidebar() {
       '--sidebar-muted': mutedHsl,
     } as React.CSSProperties;
   };
+
+  const clientLabel = useMemo(() => {
+    if (clientFilter === 'all') return 'Todos os clientes';
+    return clients?.find((c) => c.id === clientFilter)?.name || 'Todos os clientes';
+  }, [clientFilter, clients]);
+
+  const projectLabel = useMemo(() => {
+    if (projectFilter === 'all') return 'Todos os projetos';
+    return projectOptions.find((p) => p.id === projectFilter)?.name || 'Todos os projetos';
+  }, [projectFilter, projectOptions]);
 
   return (
     <Sidebar className="border-r-0" style={getSidebarStyles()}>
@@ -242,29 +265,97 @@ export function AppSidebar() {
           {!collapsed && projects && projects.length > 0 && (
             <div className="px-2 pb-2 space-y-2">
               {isAdmin && (
-                <Select value={clientFilter} onValueChange={(v) => { setClientFilter(v); setProjectFilter('all'); }}>
-                  <SelectTrigger className="h-8 bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground text-xs">
-                    <SelectValue placeholder="Filtrar cliente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os clientes</SelectItem>
-                    {clients?.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={openClientPopover} onOpenChange={setOpenClientPopover}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 w-full items-center justify-between rounded-md border border-sidebar-border bg-sidebar-accent/30 px-2.5 py-1 text-xs text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    >
+                      <span className="truncate">{clientLabel}</span>
+                      <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popper-anchor-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar cliente..." className="h-8 text-xs" />
+                      <CommandList>
+                        <CommandEmpty className="text-xs py-2 text-center">Nenhum cliente encontrado</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            className="text-xs"
+                            onSelect={() => {
+                              setClientFilter('all');
+                              setProjectFilter('all');
+                              setOpenClientPopover(false);
+                            }}
+                          >
+                            <Check className={cn('mr-2 h-3.5 w-3.5', clientFilter === 'all' ? 'opacity-100' : 'opacity-0')} />
+                            Todos os clientes
+                          </CommandItem>
+                          {clients?.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              className="text-xs"
+                              onSelect={() => {
+                                setClientFilter(c.id);
+                                setProjectFilter('all');
+                                setOpenClientPopover(false);
+                              }}
+                            >
+                              <Check className={cn('mr-2 h-3.5 w-3.5', clientFilter === c.id ? 'opacity-100' : 'opacity-0')} />
+                              {c.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               )}
-              <Select value={projectFilter} onValueChange={setProjectFilter}>
-                <SelectTrigger className="h-8 bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground text-xs">
-                  <SelectValue placeholder="Filtrar projeto" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os projetos</SelectItem>
-                  {projectOptions.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openProjectPopover} onOpenChange={setOpenProjectPopover}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-8 w-full items-center justify-between rounded-md border border-sidebar-border bg-sidebar-accent/30 px-2.5 py-1 text-xs text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  >
+                    <span className="truncate">{projectLabel}</span>
+                    <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popper-anchor-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar projeto..." className="h-8 text-xs" />
+                    <CommandList>
+                      <CommandEmpty className="text-xs py-2 text-center">Nenhum projeto encontrado</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          className="text-xs"
+                          onSelect={() => {
+                            setProjectFilter('all');
+                            setOpenProjectPopover(false);
+                          }}
+                        >
+                          <Check className={cn('mr-2 h-3.5 w-3.5', projectFilter === 'all' ? 'opacity-100' : 'opacity-0')} />
+                          Todos os projetos
+                        </CommandItem>
+                        {projectOptions.map((p) => (
+                          <CommandItem
+                            key={p.id}
+                            className="text-xs"
+                            onSelect={() => {
+                              setProjectFilter(p.id);
+                              setOpenProjectPopover(false);
+                            }}
+                          >
+                            <Check className={cn('mr-2 h-3.5 w-3.5', projectFilter === p.id ? 'opacity-100' : 'opacity-0')} />
+                            {p.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
           <SidebarGroupContent>
