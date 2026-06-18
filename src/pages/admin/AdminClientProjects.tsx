@@ -55,10 +55,17 @@ interface Project {
   name: string;
   description: string | null;
   status: string | null;
+  project_type: 'bi' | 'automation' | 'sql' | null;
   start_date: string | null;
   end_date: string | null;
   created_at: string;
 }
+
+const PROJECT_TYPE_LABELS: Record<string, string> = {
+  bi: 'BI',
+  automation: 'Automação',
+  sql: 'SQL',
+};
 
 export default function AdminClientProjects() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -69,6 +76,7 @@ export default function AdminClientProjects() {
     name: '',
     description: '',
     status: 'active',
+    project_type: 'bi' as 'bi' | 'automation' | 'sql',
     start_date: '',
     end_date: '',
   });
@@ -112,6 +120,7 @@ export default function AdminClientProjects() {
           name: data.name,
           description: data.description || null,
           status: data.status,
+          project_type: data.project_type,
           start_date: data.start_date || null,
           end_date: data.end_date || null,
         } as any);
@@ -137,6 +146,7 @@ export default function AdminClientProjects() {
           name: data.name,
           description: data.description || null,
           status: data.status,
+          project_type: data.project_type,
           start_date: data.start_date || null,
           end_date: data.end_date || null,
         } as any)
@@ -177,7 +187,7 @@ export default function AdminClientProjects() {
   const handleClose = () => {
     setIsOpen(false);
     setEditingProject(null);
-    setFormData({ name: '', description: '', status: 'active', start_date: '', end_date: '' });
+    setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' });
   };
 
   const handleEdit = (project: Project) => {
@@ -186,6 +196,7 @@ export default function AdminClientProjects() {
       name: project.name,
       description: project.description || '',
       status: project.status || 'active',
+      project_type: (project.project_type as 'bi' | 'automation' | 'sql') || 'bi',
       start_date: project.start_date || '',
       end_date: project.end_date || '',
     });
@@ -226,7 +237,7 @@ export default function AdminClientProjects() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', start_date: '', end_date: '' }); }}>
+              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' }); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Projeto
               </Button>
@@ -263,21 +274,39 @@ export default function AdminClientProjects() {
                       rows={3}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) => setFormData({ ...formData, status: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Ativo</SelectItem>
-                        <SelectItem value="completed">Concluído</SelectItem>
-                        <SelectItem value="archived">Arquivado</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="project_type">Tipo do Projeto *</Label>
+                      <Select
+                        value={formData.project_type}
+                        onValueChange={(value) => setFormData({ ...formData, project_type: value as 'bi' | 'automation' | 'sql' })}
+                      >
+                        <SelectTrigger id="project_type">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bi">BI</SelectItem>
+                          <SelectItem value="automation">Automação</SelectItem>
+                          <SelectItem value="sql">SQL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Status</Label>
+                      <Select
+                        value={formData.status}
+                        onValueChange={(value) => setFormData({ ...formData, status: value })}
+                      >
+                        <SelectTrigger id="status">
+                          <SelectValue placeholder="Selecione o status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Ativo</SelectItem>
+                          <SelectItem value="completed">Concluído</SelectItem>
+                          <SelectItem value="archived">Arquivado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -334,6 +363,7 @@ export default function AdminClientProjects() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Descrição</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Criado em</TableHead>
@@ -344,6 +374,17 @@ export default function AdminClientProjects() {
                   {projects.map((project) => (
                     <TableRow key={project.id}>
                       <TableCell className="font-medium">{project.name}</TableCell>
+                      <TableCell>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          project.project_type === 'automation'
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            : project.project_type === 'sql'
+                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                            : 'bg-primary/10 text-primary'
+                        }`}>
+                          {PROJECT_TYPE_LABELS[project.project_type || 'bi']}
+                        </span>
+                      </TableCell>
                       <TableCell className="max-w-[200px] truncate">
                         {project.description || '—'}
                       </TableCell>
