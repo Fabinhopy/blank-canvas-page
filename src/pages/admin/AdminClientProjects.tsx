@@ -374,6 +374,17 @@ export default function AdminClientProjects() {
                   {projects.map((project) => (
                     <TableRow key={project.id}>
                       <TableCell className="font-medium">{project.name}</TableCell>
+                      <TableCell>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          project.project_type === 'automation'
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            : project.project_type === 'sql'
+                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                            : 'bg-primary/10 text-primary'
+                        }`}>
+                          {PROJECT_TYPE_LABELS[project.project_type || 'bi']}
+                        </span>
+                      </TableCell>
                       <TableCell className="max-w-[200px] truncate">
                         {project.description || '—'}
                       </TableCell>
