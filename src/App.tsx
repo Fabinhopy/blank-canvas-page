@@ -94,6 +94,9 @@ const App = () => (
             <Route path="/admin/empresas/:clientId/projetos" element={
               <ProtectedRoute requireAdmin={true}><AdminClientProjects /></ProtectedRoute>
             } />
+            <Route path="/admin/projetos" element={
+              <ProtectedRoute requireAdmin={true}><AdminProjects /></ProtectedRoute>
+            } />
             <Route path="/admin/projetos/:projectId/documentos" element={
               <ProtectedRoute requireAdmin={true}><AdminProjectDocuments /></ProtectedRoute>
             } />
