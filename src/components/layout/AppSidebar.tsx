@@ -324,7 +324,7 @@ export function AppSidebar() {
               ) : (
                 <div className="px-3 py-4 text-center">
                   <p className="text-sm text-sidebar-foreground/60">
-                    {collapsed ? '—' : 'Nenhum projeto disponível'}
+                    {collapsed ? '—' : (projects && projects.length > 0 ? 'Nenhum projeto encontrado' : 'Nenhum projeto disponível')}
                   </p>
                 </div>
               )}
