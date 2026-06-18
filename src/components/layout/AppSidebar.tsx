@@ -18,6 +18,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientBranding } from '@/hooks/useClientBranding';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -54,6 +57,34 @@ export function AppSidebar() {
   const { isAdmin } = useAuth();
   const { data: clientBranding } = useClientBranding();
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
+  const [clientFilter, setClientFilter] = useState<string>('all');
+  const [projectFilter, setProjectFilter] = useState<string>('all');
+
+  const { data: clients } = useQuery({
+    queryKey: ['sidebar-clients'],
+    enabled: !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('clients').select('id, name').order('name');
+      if (error) throw error;
+      return data as { id: string; name: string }[];
+    },
+  });
+
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    return projects.filter((p) => {
+      if (clientFilter !== 'all' && p.client_id !== clientFilter) return false;
+      if (projectFilter !== 'all' && p.id !== projectFilter) return false;
+      return true;
+    });
+  }, [projects, clientFilter, projectFilter]);
+
+  const projectOptions = useMemo(() => {
+    if (!projects) return [];
+    return clientFilter === 'all'
+      ? projects
+      : projects.filter((p) => p.client_id === clientFilter);
+  }, [projects, clientFilter]);
 
   const currentProjectId = projectIdFromParams || location.pathname.match(/\/projeto\/([^/]+)/)?.[1];
 
@@ -208,14 +239,42 @@ export function AppSidebar() {
               </span>
             </div>
           )}
+          {!collapsed && projects && projects.length > 0 && (
+            <div className="px-2 pb-2 space-y-2">
+              {isAdmin && (
+                <Select value={clientFilter} onValueChange={(v) => { setClientFilter(v); setProjectFilter('all'); }}>
+                  <SelectTrigger className="h-8 bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground text-xs">
+                    <SelectValue placeholder="Filtrar cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os clientes</SelectItem>
+                    {clients?.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="h-8 bg-sidebar-accent/30 border-sidebar-border text-sidebar-foreground text-xs">
+                  <SelectValue placeholder="Filtrar projeto" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os projetos</SelectItem>
+                  {projectOptions.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               {isLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-4 w-4 animate-spin text-sidebar-foreground/60" />
                 </div>
-              ) : projects && projects.length > 0 ? (
-                projects.map((project) => (
+              ) : filteredProjects && filteredProjects.length > 0 ? (
+                filteredProjects.map((project) => (
                   <Collapsible
                     key={project.id}
                     open={isProjectOpen(project.id)}
@@ -265,7 +324,7 @@ export function AppSidebar() {
               ) : (
                 <div className="px-3 py-4 text-center">
                   <p className="text-sm text-sidebar-foreground/60">
-                    {collapsed ? '—' : 'Nenhum projeto disponível'}
+                    {collapsed ? '—' : (projects && projects.length > 0 ? 'Nenhum projeto encontrado' : 'Nenhum projeto disponível')}
                   </p>
                 </div>
               )}
