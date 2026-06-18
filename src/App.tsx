@@ -27,6 +27,7 @@ import Chat from "./pages/Chat";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminClientUsers from "./pages/admin/AdminClientUsers";
 import AdminClientProjects from "./pages/admin/AdminClientProjects";
+import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProjectDocuments from "./pages/admin/AdminProjectDocuments";
 import AdminProjectTrainings from "./pages/admin/AdminProjectTrainings";
 import AdminGlobalTrainings from "./pages/admin/AdminGlobalTrainings";
@@ -92,6 +93,9 @@ const App = () => (
             } />
             <Route path="/admin/empresas/:clientId/projetos" element={
               <ProtectedRoute requireAdmin={true}><AdminClientProjects /></ProtectedRoute>
+            } />
+            <Route path="/admin/projetos" element={
+              <ProtectedRoute requireAdmin={true}><AdminProjects /></ProtectedRoute>
             } />
             <Route path="/admin/projetos/:projectId/documentos" element={
               <ProtectedRoute requireAdmin={true}><AdminProjectDocuments /></ProtectedRoute>
