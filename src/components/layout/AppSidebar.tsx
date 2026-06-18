@@ -32,6 +32,7 @@ import {
   BarChart3,
   CalendarDays,
   MessageCircle,
+  Briefcase,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 
