@@ -76,6 +76,7 @@ export default function AdminClientProjects() {
     name: '',
     description: '',
     status: 'active',
+    project_type: 'bi' as 'bi' | 'automation' | 'sql',
     start_date: '',
     end_date: '',
   });
