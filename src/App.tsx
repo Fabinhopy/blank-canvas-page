@@ -35,6 +35,7 @@ import AdminProjectLinks from "./pages/admin/AdminProjectLinks";
 import AdminProjectMilestones from "./pages/admin/AdminProjectMilestones";
 import AdminProjectAnnouncements from "./pages/admin/AdminProjectAnnouncements";
 import AdminProjectVersions from "./pages/admin/AdminProjectVersions";
+import AdminSupport from "./pages/admin/AdminSupport";
 
 const queryClient = new QueryClient();
 
@@ -116,6 +117,9 @@ const App = () => (
             } />
             <Route path="/admin/treinamentos" element={
               <ProtectedRoute requireAdmin={true}><AdminGlobalTrainings /></ProtectedRoute>
+            } />
+            <Route path="/admin/suporte" element={
+              <ProtectedRoute requireAdmin={true}><AdminSupport /></ProtectedRoute>
             } />
             
             {/* Global Trainings */}

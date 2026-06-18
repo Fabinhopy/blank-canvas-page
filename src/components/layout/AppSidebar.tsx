@@ -246,6 +246,14 @@ export function AppSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/suporte'}>
+                    <NavLink to="/admin/suporte" className="flex items-center gap-3">
+                      <LifeBuoy className="h-4 w-4" />
+                      {!collapsed && <span>Suporte</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
