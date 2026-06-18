@@ -120,6 +120,7 @@ export default function AdminClientProjects() {
           name: data.name,
           description: data.description || null,
           status: data.status,
+          project_type: data.project_type,
           start_date: data.start_date || null,
           end_date: data.end_date || null,
         } as any);
