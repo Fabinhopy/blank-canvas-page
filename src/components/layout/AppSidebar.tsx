@@ -205,14 +205,24 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {!isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/treinamentos'}>
-                    <NavLink to="/treinamentos" className="flex items-center gap-3">
-                      <GraduationCap className="h-4 w-4" />
-                      {!collapsed && <span>Treinamentos</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/treinamentos'}>
+                      <NavLink to="/treinamentos" className="flex items-center gap-3">
+                        <GraduationCap className="h-4 w-4" />
+                        {!collapsed && <span>Treinamentos</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/suporte'}>
+                      <NavLink to="/suporte" className="flex items-center gap-3">
+                        <LifeBuoy className="h-4 w-4" />
+                        {!collapsed && <span>Suporte</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
