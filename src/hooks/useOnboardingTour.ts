@@ -99,6 +99,9 @@ export function useAutoStartOnboarding(enabled: boolean = true) {
   useEffect(() => {
     if (!enabled) return;
     if (hasCompletedOnboarding()) return;
+    // Marca como concluído imediatamente para evitar que o tour reapareça
+    // em recarregamentos futuros, mesmo se o usuário fechar antes do fim.
+    markOnboardingCompleted();
     const t = setTimeout(() => startOnboardingTour(), 600);
     return () => clearTimeout(t);
   }, [enabled]);
