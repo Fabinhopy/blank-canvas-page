@@ -322,13 +322,32 @@ export default function AdminClientProjects() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="end_date">Data de Término</Label>
+                      <Label htmlFor="end_date">
+                        {formData.status === 'completed' ? 'Data de Conclusão' : 'Data de Término'}
+                      </Label>
                       <Input
                         id="end_date"
                         type="date"
                         value={formData.end_date}
+                        disabled={formData.end_date_indeterminate}
                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                       />
+                      <div className="flex items-center gap-2 pt-1">
+                        <Checkbox
+                          id="end_date_indeterminate"
+                          checked={formData.end_date_indeterminate}
+                          onCheckedChange={(checked) =>
+                            setFormData({
+                              ...formData,
+                              end_date_indeterminate: !!checked,
+                              end_date: checked ? '' : formData.end_date,
+                            })
+                          }
+                        />
+                        <Label htmlFor="end_date_indeterminate" className="text-xs font-normal cursor-pointer">
+                          Prazo indeterminado
+                        </Label>
+                      </div>
                     </div>
                   </div>
                 </div>
