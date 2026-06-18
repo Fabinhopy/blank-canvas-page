@@ -363,6 +363,7 @@ export default function AdminClientProjects() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Descrição</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Criado em</TableHead>
