@@ -298,7 +298,16 @@ export default function AdminClientProjects() {
                       <Label htmlFor="status">Status</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value) => setFormData({ ...formData, status: value })}
+                        onValueChange={(value) => {
+                          const today = new Date().toISOString().slice(0, 10);
+                          setFormData({
+                            ...formData,
+                            status: value,
+                            ...(value === 'completed' && !formData.end_date
+                              ? { end_date: today, end_date_indeterminate: false }
+                              : {}),
+                          });
+                        }}
                       >
                         <SelectTrigger id="status">
                           <SelectValue placeholder="Selecione o status" />
