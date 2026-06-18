@@ -35,6 +35,8 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+const SYSTEM_SUPPORT_LABEL = 'Central de Dúvidas';
+
 const TYPE_META: Record<string, { label: string; icon: any; cls: string }> = {
   bug: { label: 'Bug', icon: Bug, cls: 'bg-destructive/10 text-destructive' },
   task: { label: 'Tarefa', icon: ListTodo, cls: 'bg-primary/10 text-primary' },
@@ -110,6 +112,7 @@ export default function AdminSupport() {
   }, [filterProject, projects]);
 
   const formProjectLabel = useMemo(() => {
+    if (!f.project_id) return SYSTEM_SUPPORT_LABEL;
     const p = projects?.find(p => p.id === f.project_id);
     return p ? `${p.name}${p.clients ? ` · ${p.clients.name}` : ''}` : 'Selecione o projeto';
   }, [f.project_id, projects]);
@@ -205,6 +208,17 @@ export default function AdminSupport() {
                         <CommandList>
                           <CommandEmpty>Nenhum projeto encontrado.</CommandEmpty>
                           <CommandGroup>
+                            <CommandItem
+                              value="central de duvidas"
+                              onSelect={() => {
+                                setF({ ...f, project_id: '' });
+                                setOpenFormProject(false);
+                              }}
+                            >
+                              <Check className={cn('mr-2 h-4 w-4', !f.project_id ? 'opacity-100' : 'opacity-0')} />
+                              <span className="truncate font-medium">{SYSTEM_SUPPORT_LABEL}</span>
+                              <span className="ml-auto text-xs text-muted-foreground">Geral</span>
+                            </CommandItem>
                             {projects?.map(p => (
                               <CommandItem
                                 key={p.id}
@@ -387,8 +401,10 @@ export default function AdminSupport() {
                       <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded', prio.cls)}>
                         <Flag className="h-2.5 w-2.5 inline mr-0.5" /> {prio.label}
                       </span>
-                      {t.project_name && (
+                      {t.project_name ? (
                         <Badge variant="secondary" className="text-[10px] ml-auto">{t.project_name}</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] ml-auto text-primary border-primary/30">{SYSTEM_SUPPORT_LABEL}</Badge>
                       )}
                     </div>
                     <p className="text-sm font-medium">{t.subject}</p>
@@ -419,8 +435,10 @@ export default function AdminSupport() {
                   <DialogTitle>{openTicket.subject}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
-                  {openTicket.project_name && (
+                  {openTicket.project_name ? (
                     <Badge variant="secondary">{openTicket.project_name}</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-primary border-primary/30">{SYSTEM_SUPPORT_LABEL}</Badge>
                   )}
                   <p className="text-sm whitespace-pre-wrap">{openTicket.message}</p>
                   <div className="grid grid-cols-2 gap-3">
