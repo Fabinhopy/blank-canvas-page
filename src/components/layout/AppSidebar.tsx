@@ -57,6 +57,34 @@ export function AppSidebar() {
   const { isAdmin } = useAuth();
   const { data: clientBranding } = useClientBranding();
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
+  const [clientFilter, setClientFilter] = useState<string>('all');
+  const [projectFilter, setProjectFilter] = useState<string>('all');
+
+  const { data: clients } = useQuery({
+    queryKey: ['sidebar-clients'],
+    enabled: !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('clients').select('id, name').order('name');
+      if (error) throw error;
+      return data as { id: string; name: string }[];
+    },
+  });
+
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    return projects.filter((p) => {
+      if (clientFilter !== 'all' && p.client_id !== clientFilter) return false;
+      if (projectFilter !== 'all' && p.id !== projectFilter) return false;
+      return true;
+    });
+  }, [projects, clientFilter, projectFilter]);
+
+  const projectOptions = useMemo(() => {
+    if (!projects) return [];
+    return clientFilter === 'all'
+      ? projects
+      : projects.filter((p) => p.client_id === clientFilter);
+  }, [projects, clientFilter]);
 
   const currentProjectId = projectIdFromParams || location.pathname.match(/\/projeto\/([^/]+)/)?.[1];
 
