@@ -118,6 +118,9 @@ const App = () => (
             <Route path="/admin/treinamentos" element={
               <ProtectedRoute requireAdmin={true}><AdminGlobalTrainings /></ProtectedRoute>
             } />
+            <Route path="/admin/suporte" element={
+              <ProtectedRoute requireAdmin={true}><AdminSupport /></ProtectedRoute>
+            } />
             
             {/* Global Trainings */}
             <Route path="/treinamentos" element={
