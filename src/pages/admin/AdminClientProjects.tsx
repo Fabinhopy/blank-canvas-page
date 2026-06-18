@@ -189,7 +189,7 @@ export default function AdminClientProjects() {
   const handleClose = () => {
     setIsOpen(false);
     setEditingProject(null);
-    setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' });
+    setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '', end_date_indeterminate: false });
   };
 
   const handleEdit = (project: Project) => {
@@ -239,7 +239,7 @@ export default function AdminClientProjects() {
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '' }); }}>
+              <Button onClick={() => { setEditingProject(null); setFormData({ name: '', description: '', status: 'active', project_type: 'bi', start_date: '', end_date: '', end_date_indeterminate: false }); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Projeto
               </Button>
