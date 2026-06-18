@@ -35,6 +35,8 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+const SYSTEM_SUPPORT_LABEL = 'Central de Dúvidas';
+
 const TYPE_META: Record<string, { label: string; icon: any; cls: string }> = {
   bug: { label: 'Bug', icon: Bug, cls: 'bg-destructive/10 text-destructive' },
   task: { label: 'Tarefa', icon: ListTodo, cls: 'bg-primary/10 text-primary' },
