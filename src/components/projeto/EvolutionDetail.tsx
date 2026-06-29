@@ -26,6 +26,11 @@ const stageIcons: Record<string, React.ElementType> = {
   'Produção': Rocket,
 };
 
+const parseDateOnly = (value: string) => {
+  const datePart = value.split('T')[0];
+  return new Date(datePart + 'T00:00:00');
+};
+
 type ViewMode = 'table' | 'gantt';
 
 interface Props {
@@ -252,12 +257,12 @@ function TableView({ stages, expandedStage, setExpandedStage, projectId, isAdmin
                   <div className="flex gap-3 mt-1">
                     {stage.started_at && (
                       <span className="text-xs text-muted-foreground">
-                        Início: {format(new Date(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        Início: {format(parseDateOnly(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
                       </span>
                     )}
                     {stage.completed_at && (
                       <span className="text-xs text-muted-foreground">
-                        Término: {format(new Date(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        Término: {format(parseDateOnly(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
                       </span>
                     )}
                   </div>
@@ -325,8 +330,8 @@ function GanttBar({ stageId, leftPercent, widthPercent }: { stageId: string; lef
 function GanttView({ stages }: { stages: EvolutionStage[] }) {
   const stagesWithDates = stages.filter(s => s.started_at);
   const allDates = stagesWithDates.flatMap(s => {
-    const d = [new Date(s.started_at!)];
-    if (s.completed_at) d.push(new Date(s.completed_at));
+    const d = [parseDateOnly(s.started_at!)];
+    if (s.completed_at) d.push(parseDateOnly(s.completed_at));
     return d;
   });
 
@@ -363,8 +368,8 @@ function GanttView({ stages }: { stages: EvolutionStage[] }) {
             const Icon = stageIcons[stage.stage_name] || Circle;
             let leftPercent = 0, widthPercent = 0;
             if (stage.started_at) {
-              const start = new Date(stage.started_at);
-              const end = stage.completed_at ? new Date(stage.completed_at) : new Date();
+              const start = parseDateOnly(stage.started_at);
+              const end = stage.completed_at ? parseDateOnly(stage.completed_at) : new Date();
               leftPercent = (differenceInDays(start, minDate) / totalDays) * 100;
               widthPercent = Math.max((differenceInDays(end, start) / totalDays) * 100, 2);
             }

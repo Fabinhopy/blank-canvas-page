@@ -24,6 +24,11 @@ const stageIcons: Record<string, React.ElementType> = {
   'Evolução': TrendingUp,
 };
 
+const parseDateOnly = (value: string) => {
+  const datePart = value.split('T')[0];
+  return new Date(datePart + 'T00:00:00');
+};
+
 function TimelineStageItem({ stage, isLast }: { stage: ProjectStage; isLast: boolean }) {
   const { data: items } = useProjectStageItems(stage.id);
   const total = items?.length || 0;
@@ -64,12 +69,12 @@ function TimelineStageItem({ stage, isLast }: { stage: ProjectStage; isLast: boo
         <div className="flex gap-3 mt-0.5">
           {stage.started_at && (
             <span className="text-xs text-muted-foreground">
-              Início: {format(new Date(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
+              Início: {format(parseDateOnly(stage.started_at), 'dd/MM/yyyy', { locale: ptBR })}
             </span>
           )}
           {stage.completed_at && (
             <span className="text-xs text-muted-foreground">
-              Término: {format(new Date(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
+              Término: {format(parseDateOnly(stage.completed_at), 'dd/MM/yyyy', { locale: ptBR })}
             </span>
           )}
         </div>
