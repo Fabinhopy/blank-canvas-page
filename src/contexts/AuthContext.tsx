@@ -20,8 +20,6 @@ interface AuthContextType {
   profile: Profile | null;
   userRole: 'admin' | 'client' | null;
   isAdmin: boolean;
-  isCompanyAdmin: boolean;
-  userCompanyId: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -34,8 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRole, setUserRole] = useState<'admin' | 'client' | null>(null);
-  const [isCompanyAdmin, setIsCompanyAdmin] = useState(false);
-  const [userCompanyId, setUserCompanyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
@@ -63,26 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUserRole('client');
       }
-
-      // Fetch company-level role and client_id
-      const { data: clientUserData } = await supabase
-        .from('client_users')
-        .select('client_id, role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (clientUserData) {
-        setIsCompanyAdmin(clientUserData.role === 'admin');
-        setUserCompanyId(clientUserData.client_id);
-      } else {
-        setIsCompanyAdmin(false);
-        setUserCompanyId(null);
-      }
     } catch (error) {
       console.error('Error fetching user data:', error);
       setUserRole('client');
-      setIsCompanyAdmin(false);
-      setUserCompanyId(null);
     }
   };
 
@@ -99,8 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setUserRole(null);
-          setIsCompanyAdmin(false);
-          setUserCompanyId(null);
         }
         setLoading(false);
       }
@@ -133,8 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setUserRole(null);
-    setIsCompanyAdmin(false);
-    setUserCompanyId(null);
   };
 
   const value = {
@@ -143,8 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     userRole,
     isAdmin: userRole === 'admin',
-    isCompanyAdmin,
-    userCompanyId,
     loading,
     signIn,
     signOut,
