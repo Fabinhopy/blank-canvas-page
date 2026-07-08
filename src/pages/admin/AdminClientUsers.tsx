@@ -33,19 +33,10 @@ import {
   Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 
 interface ClientUser {
   id: string;
   user_id: string;
-  role: 'admin' | 'user';
   created_at: string;
   profile?: {
     full_name: string;
@@ -61,8 +52,7 @@ export default function AdminClientUsers() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    fullName: '',
-    role: 'user' as 'admin' | 'user'
+    fullName: ''
   });
 
   const { data: client } = useQuery({
@@ -88,7 +78,6 @@ export default function AdminClientUsers() {
         .select(`
           id,
           user_id,
-          role,
           created_at
         `)
         .eq('client_id', clientId);
@@ -124,8 +113,7 @@ export default function AdminClientUsers() {
           email: data.email,
           password: data.password,
           fullName: data.fullName,
-          clientId: clientId,
-          role: data.role
+          clientId: clientId
         }
       });
       
@@ -164,7 +152,7 @@ export default function AdminClientUsers() {
 
   const handleClose = () => {
     setIsOpen(false);
-    setFormData({ email: '', password: '', fullName: '', role: 'user' });
+    setFormData({ email: '', password: '', fullName: '' });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -238,21 +226,6 @@ export default function AdminClientUsers() {
                       placeholder="Mínimo 6 caracteres"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Nível de Permissão</Label>
-                    <Select
-                      value={formData.role}
-                      onValueChange={(val: 'admin' | 'user') => setFormData({ ...formData, role: val })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user">Usuário Comum</SelectItem>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={handleClose}>
@@ -288,7 +261,6 @@ export default function AdminClientUsers() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Nível de Acesso</TableHead>
                     <TableHead>Empresa</TableHead>
                     <TableHead>Cadastrado em</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -299,17 +271,6 @@ export default function AdminClientUsers() {
                     <TableRow key={cu.id}>
                       <TableCell className="font-medium">
                         {cu.profile?.full_name || 'Sem nome'}
-                      </TableCell>
-                      <TableCell>
-                        {cu.role === 'admin' ? (
-                          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                            Administrador
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-muted text-muted-foreground">
-                            Usuário
-                          </Badge>
-                        )}
                       </TableCell>
                       <TableCell>{cu.profile?.company || '—'}</TableCell>
                       <TableCell>

@@ -22,7 +22,6 @@ import NotFound from "./pages/NotFound";
 import ProjectSupport from "./pages/projeto/ProjectSupport";
 import GlobalTrainings from "./pages/GlobalTrainings";
 import Chat from "./pages/Chat";
-import CompanyUsers from "./pages/CompanyUsers";
 
 // Admin Pages
 import AdminClients from "./pages/admin/AdminClients";
@@ -62,9 +61,6 @@ const App = () => (
             } />
             <Route path="/agenda" element={
               <ProtectedRoute><GlobalAgenda /></ProtectedRoute>
-            } />
-            <Route path="/usuarios" element={
-              <ProtectedRoute requireCompanyAdmin={true}><CompanyUsers /></ProtectedRoute>
             } />
             
             {/* Project routes */}
