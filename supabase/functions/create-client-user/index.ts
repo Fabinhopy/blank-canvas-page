@@ -41,26 +41,45 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check if requesting user is admin
+    const body = await req.json()
+    const { email, password, fullName, clientId, role } = body
+
+    if (!email || !password || !fullName || !clientId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check if requesting user is global admin
     const { data: roleData } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', requestingUser.id)
       .single()
 
-    if (!roleData || roleData.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ error: 'Only admins can create users' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    const isGlobalAdmin = roleData?.role === 'admin'
+
+    // Check if requesting user is company admin for the specified client
+    let isCompanyAdmin = false
+    if (!isGlobalAdmin) {
+      const { data: clientUserData } = await supabaseAdmin
+        .from('client_users')
+        .select('role')
+        .eq('user_id', requestingUser.id)
+        .eq('client_id', clientId)
+        .eq('role', 'admin')
+        .maybeSingle()
+
+      if (clientUserData) {
+        isCompanyAdmin = true
+      }
     }
 
-    const { email, password, fullName, clientId } = await req.json()
-
-    if (!email || !password || !fullName || !clientId) {
+    if (!isGlobalAdmin && !isCompanyAdmin) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Only administrators can create users' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -101,7 +120,8 @@ Deno.serve(async (req) => {
       .from('client_users')
       .insert({
         user_id: userId,
-        client_id: clientId
+        client_id: clientId,
+        role: role || 'user'
       })
 
     return new Response(

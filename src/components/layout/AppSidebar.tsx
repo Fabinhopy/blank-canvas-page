@@ -36,6 +36,7 @@ import {
   MessageCircle,
   Search,
   Check,
+  Users,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -65,7 +66,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { id: projectIdFromParams } = useParams();
   const { data: projects, isLoading } = useProjects();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isCompanyAdmin } = useAuth();
   const { data: clientBranding } = useClientBranding();
   const [openProjects, setOpenProjects] = useState<Record<string, boolean>>({});
   const [clientFilter, setClientFilter] = useState<string>('all');
@@ -261,6 +262,31 @@ export function AppSidebar() {
                     <NavLink to="/admin/suporte" className="flex items-center gap-3">
                       <LifeBuoy className="h-4 w-4" />
                       {!collapsed && <span>Suporte</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Company Admin Section */}
+        {isCompanyAdmin && (
+          <SidebarGroup>
+            {!collapsed && (
+              <div className="px-3 py-2">
+                <span className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+                  Administração
+                </span>
+              </div>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/usuarios'}>
+                    <NavLink to="/usuarios" className="flex items-center gap-3">
+                      <Users className="h-4 w-4" />
+                      {!collapsed && <span>Usuários</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
