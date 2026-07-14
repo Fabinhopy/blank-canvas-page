@@ -36,6 +36,7 @@ import {
   MessageCircle,
   Search,
   Check,
+  Users,
 } from 'lucide-react';
 import logo from '@/assets/logo-smartest.svg';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -245,6 +246,14 @@ export function AppSidebar() {
                     <NavLink to="/admin/empresas" className="flex items-center gap-3">
                       <Building2 className="h-4 w-4" />
                       {!collapsed && <span>Empresas</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/usuarios'}>
+                    <NavLink to="/admin/usuarios" className="flex items-center gap-3">
+                      <Users className="h-4 w-4" />
+                      {!collapsed && <span>Usuários</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
